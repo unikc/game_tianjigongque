@@ -38,6 +38,7 @@ import {
   residenceFor,
   performPalaceAction,
   SAVE_KEY,
+  safeStorage,
   serialize,
   spendGrowthPoint,
 } from "../../game/state/engine";
@@ -52,6 +53,12 @@ import type {
   ZodiacId,
 } from "../../game/types";
 import { backgrounds } from "../../../imperial-design-system/backgrounds/registry";
+import {
+  haptics,
+  hideSplash,
+  initNativeShell,
+  onAppPause,
+} from "../../native/bridge";
 
 const rewardGuides: Record<
   string,
@@ -77,6 +84,13 @@ const rewardGuides: Record<
     hidden: "隐藏线索：同一枚印曾出现在军粮调令上。",
   },
 };
+
+/** 任一人物关系值下降时返回 true，用于给负面后果一个不同的触感反馈。 */
+function hasRelationLoss(before: GameState, after: GameState): boolean {
+  return (Object.keys(after.relations) as RelationKey[]).some(
+    (key) => after.relations[key] < before.relations[key],
+  );
+}
 
 function RewardIntel({ reward }: { reward: Reward }) {
   const guide = rewardGuides[reward.id];
@@ -1971,25 +1985,43 @@ export default function Game() {
   const hasSave = savedOnDisk || state !== null;
   useEffect(() => {
     const timer = window.setTimeout(
-      () => setSavedOnDisk(!!localStorage.getItem(SAVE_KEY)),
+      () => setSavedOnDisk(!!safeStorage.get(SAVE_KEY)),
       0,
     );
     return () => window.clearTimeout(timer);
   }, []);
   useEffect(() => {
-    if (state) localStorage.setItem(SAVE_KEY, serialize(state));
+    if (state) safeStorage.set(SAVE_KEY, serialize(state));
   }, [state]);
+  // 原生外壳初始化：状态栏样式 + 隐藏启动屏（非原生环境自动 no-op）
+  useEffect(() => {
+    void initNativeShell();
+    void hideSplash();
+  }, []);
+  // iOS 可能在后台直接回收进程，切后台时立即落盘，避免进度丢失
+  const stateRef = useRef(state);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+  useEffect(
+    () =>
+      onAppPause(() => {
+        const current = stateRef.current;
+        if (current) safeStorage.set(SAVE_KEY, serialize(current));
+      }),
+    [],
+  );
   const scene = useMemo(() => (state ? scenes[state.sceneId] : null), [state]);
   const laterResultChapter = state?.sceneId.match(/^day(\d+)_result$/)?.[1];
   function restart() {
-    localStorage.removeItem(SAVE_KEY);
+    safeStorage.remove(SAVE_KEY);
     setState(null);
     setSavedOnDisk(false);
     setConfirmingRestart(false);
     setScreen("origin");
   }
   function continueRun() {
-    const s = deserialize(localStorage.getItem(SAVE_KEY) ?? "");
+    const s = deserialize(safeStorage.get(SAVE_KEY) ?? "");
     if (s) {
       setState(s);
       setScreen(resumeDestination(s));
@@ -1997,7 +2029,14 @@ export default function Game() {
   }
   function choose(choice: Choice) {
     if (!state || !scene) return;
-    setState(applyEffect(state, choice.effect, choice.id, choice.next));
+    const next = applyEffect(state, choice.effect, choice.id, choice.next);
+    // 分级触感：章节结算/晋位是里程碑，关系恶化是负面后果，其余为普通点击。
+    // 让"这一步很重"在指尖有实感，是文字游戏在手机上最划算的体验投资。
+    if (/_result$/.test(next.sceneId)) void haptics.success();
+    else if (next.rank !== state.rank) void haptics.success();
+    else if (hasRelationLoss(state, next)) void haptics.warning();
+    else void haptics.light();
+    setState(next);
   }
   return (
     <GameShell
