@@ -30,7 +30,9 @@ const { chromium } = require("playwright-core");
     } catch (e) {}
   });
 
-  await page.goto("file:///mnt/user-data/outputs/tianji-palace.html");
+  await page.goto(
+    "file:///home/claude/game_tianjigongque/standalone/out/tianji-palace.html",
+  );
   await page.waitForTimeout(1800);
 
   const txt = await page.innerText("body");

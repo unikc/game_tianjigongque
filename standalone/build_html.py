@@ -23,6 +23,6 @@ __JS__
 """
 
 html = html.replace("__CSS__", css).replace("__JS__", js)
-path = "/mnt/user-data/outputs/tianji-palace.html"
+path = "standalone/out/tianji-palace.html"
 open(path, "w", encoding="utf-8").write(html)
 print("wrote", path, round(len(html.encode("utf-8")) / 1024 / 1024, 2), "MB")

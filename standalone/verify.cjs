@@ -12,7 +12,9 @@ const { chromium } = require("playwright-core");
   });
   page.on("pageerror", (e) => errors.push("PAGEERROR: " + e.message));
 
-  await page.goto("file:///mnt/user-data/outputs/tianji-palace.html");
+  await page.goto(
+    "file:///home/claude/game_tianjigongque/standalone/out/tianji-palace.html",
+  );
   await page.waitForTimeout(2500);
 
   const title = await page.title();
@@ -21,7 +23,10 @@ const { chromium } = require("playwright-core");
   console.log("title:", title);
   console.log("可见文字长度:", bodyLen);
   console.log("按钮数:", buttons);
-  console.log("首屏文字:", (await page.innerText("body")).slice(0, 120).replace(/\n/g, " | "));
+  console.log(
+    "首屏文字:",
+    (await page.innerText("body")).slice(0, 120).replace(/\n/g, " | "),
+  );
 
   await page.screenshot({ path: "/tmp/shot1.png" });
 
@@ -29,7 +34,10 @@ const { chromium } = require("playwright-core");
   if (buttons > 0) {
     await page.locator("button").first().click();
     await page.waitForTimeout(1200);
-    console.log("点击后文字:", (await page.innerText("body")).slice(0, 120).replace(/\n/g, " | "));
+    console.log(
+      "点击后文字:",
+      (await page.innerText("body")).slice(0, 120).replace(/\n/g, " | "),
+    );
     await page.screenshot({ path: "/tmp/shot2.png" });
   }
 

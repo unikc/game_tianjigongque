@@ -1,0 +1,4 @@
+ios/
+standalone/out/
+dist/
+pnpm-lock.yaml

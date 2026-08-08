@@ -12,7 +12,9 @@ const { chromium } = require("playwright-core");
     if (m.type() === "error") errors.push(m.text());
   });
 
-  await page.goto("file:///mnt/user-data/outputs/tianji-palace.html");
+  await page.goto(
+    "file:///home/claude/game_tianjigongque/standalone/out/tianji-palace.html",
+  );
   await page.waitForTimeout(1500);
 
   const clickText = async (t) => {

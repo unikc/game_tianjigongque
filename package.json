@@ -19,7 +19,8 @@
     "db:generate": "drizzle-kit generate",
     "build:static": "next build",
     "ios:sync": "next build && cap sync ios",
-    "ios:open": "cap open ios"
+    "ios:open": "cap open ios",
+    "standalone": "bash standalone/build.sh"
   },
   "dependencies": {
     "@capacitor/app": "^8.1.1",

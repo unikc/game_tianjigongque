@@ -45,7 +45,10 @@ export default function Image({
         objectFit: "cover",
       }
     : {};
+  // 这个文件的存在意义就是在脱离 Next 运行时的 standalone 构建里替代
+  // next/image，因此此处必须使用原生 img 元素。
   return (
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       src={src}
       alt={alt}
