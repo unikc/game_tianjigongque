@@ -1,13 +1,16 @@
 import type { Choice, GameState } from "../types";
+import { deriveTruths } from "./hidden-truth";
 
 export function isChoiceAvailable(state: GameState, choice: Choice) {
   const relation = choice.requiresRelation;
+  const truth = choice.requiresTruth;
   const canPayResources = (["体力", "银钱"] as const).every((stat) => {
     const change = choice.effect.stats?.[stat] ?? 0;
     return change >= 0 || state.stats[stat] >= Math.abs(change);
   });
   return (
     canPayResources &&
+    (!truth || deriveTruths(state.seed)[truth.key] === truth.value) &&
     (!choice.requiresZodiac || choice.requiresZodiac === state.zodiac) &&
     (!choice.requiresRank || choice.requiresRank === state.rank) &&
     (!choice.requiresTag || state.tags.includes(choice.requiresTag)) &&

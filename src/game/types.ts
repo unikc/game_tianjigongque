@@ -31,6 +31,13 @@ export type Choice = {
   requiresAnyTag?: string[];
   excludesTag?: string;
   requiresRelation?: { name: RelationKey; min?: number; max?: number };
+  /**
+   * 挂在本局隐藏真相上的条件。真相由种子推导，玩家看不见，
+   * 因此这类选项的出现与否会让同一套操作在不同周目产生不同剧情。
+   */
+  requiresTruth?:
+    | { key: "wenLoyalty"; value: "honest" | "compromised" }
+    | { key: "arsonPatron"; value: "royal" | "dowager" };
 };
 export type PromotionRoute = "帝心" | "清议" | "人脉";
 export type PromotionDecision = {
