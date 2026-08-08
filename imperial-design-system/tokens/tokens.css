@@ -1,0 +1,70 @@
+:root {
+  --ids-color-imperial-red: #8d3027;
+  --ids-color-imperial-red-dark: #64231f;
+  --ids-color-old-gold: #a48345;
+  --ids-color-rice-paper: #f4ecd8;
+  --ids-color-rice-paper-deep: #e8d8b7;
+  --ids-color-ink: #29271f;
+  --ids-color-jade: #234b48;
+  --ids-color-cloud: #fffaf0;
+  --ids-color-fog: #65645e;
+  --ids-color-royal-blue: #243d5a;
+  --ids-color-bronze: #795b32;
+  --ids-color-focus: #bf7c39;
+  --ids-space-1: 4px;
+  --ids-space-2: 8px;
+  --ids-space-3: 12px;
+  --ids-space-4: 16px;
+  --ids-space-5: 20px;
+  --ids-space-6: 24px;
+  --ids-space-8: 32px;
+  --ids-space-10: 40px;
+  --ids-radius-sm: 4px;
+  --ids-radius-md: 10px;
+  --ids-radius-lg: 18px;
+  --ids-border-hairline: 1px;
+  --ids-border-strong: 2px;
+  --ids-touch-min: 44px;
+  --ids-font-narrative: "Songti SC", "STSong", "Noto Serif SC", serif;
+  --ids-font-ui: "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+  --ids-font-display: "Songti SC", "STSong", "Noto Serif SC", serif;
+  --ids-font-body: "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+  --ids-text-xs: 0.75rem;
+  --ids-text-sm: 0.875rem;
+  --ids-text-md: 1rem;
+  --ids-text-dialogue: 1.0625rem;
+  --ids-text-lg: 1.25rem;
+  --ids-text-xl: 1.75rem;
+  --ids-text-character-name: clamp(1.75rem, 7vw, 2.2rem);
+  --ids-text-section-title: 1.3rem;
+  --ids-material-silk: #ece2cb;
+  --ids-material-jade-paper: #d8ddd1;
+  --ids-material-warm-paper: #f3ead6;
+  --ids-leading-dialogue: 1.8;
+  --ids-shadow-paper: 0 20px 60px rgb(14 28 27 / 35%);
+  --ids-shadow-raised: 0 8px 20px rgb(41 39 31 / 18%);
+  --ids-blur-backdrop: 8px;
+  --ids-duration-fast: 120ms;
+  --ids-duration-standard: 240ms;
+  --ids-duration-scene: 480ms;
+  --ids-ease-enter: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ids-safe-top: max(12px, env(safe-area-inset-top));
+  --ids-safe-bottom: max(12px, env(safe-area-inset-bottom));
+  --ids-breakpoint-compact: 360px;
+
+  /* Compatibility aliases while legacy CSS migrates component-by-component. */
+  --paper: var(--ids-color-rice-paper);
+  --paper2: var(--ids-color-rice-paper-deep);
+  --ink: var(--ids-color-ink);
+  --cinnabar: var(--ids-color-imperial-red);
+  --jade: var(--ids-color-jade);
+  --gold: var(--ids-color-old-gold);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ids-duration-fast: 1ms;
+    --ids-duration-standard: 1ms;
+    --ids-duration-scene: 1ms;
+  }
+}
