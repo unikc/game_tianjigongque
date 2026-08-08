@@ -13,6 +13,52 @@ import type {
   ZodiacId,
 } from "../types";
 export const SAVE_KEY = "tianji-palace-save";
+
+/**
+ * localStorage 的安全包装。
+ *
+ * 隐私模式 Safari、被沙箱限制的 iframe、以及关闭了站点数据的浏览器里，
+ * 访问 localStorage 会直接抛 SecurityError。裸调用会让整个 React 树
+ * 挂掉，玩家看到的是白屏——比"存档丢失"严重得多。
+ *
+ * 这里的取舍：存档能力可以降级，可玩性不能。读失败当作没有存档，
+ * 写失败静默忽略，游戏继续在内存中进行。
+ */
+export const safeStorage = {
+  get(key: string): string | null {
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  set(key: string, value: string): boolean {
+    try {
+      localStorage.setItem(key, value);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+  remove(key: string): void {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      /* 存储不可用时无需清理 */
+    }
+  },
+  /** 供 UI 提示玩家"本次进度不会被保存" */
+  available(): boolean {
+    try {
+      const probe = "__tianji_probe__";
+      localStorage.setItem(probe, "1");
+      localStorage.removeItem(probe);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+};
 export const ACTION_POINT_CAP = 5;
 export const rankOrder: Rank[] = [
   "答应",
@@ -758,7 +804,14 @@ export function resolveEnding(state: GameState) {
     id = "palace-history";
   else if (has("ch12_freedom")) id = "spring-beyond-palace";
   else if (has("ch12_truth_sealed")) id = "shadow-network";
-  else if (has("ch12_reform") && has("ch7_pei_truth")) id = "gatekeeper";
+  // 「守门之人」原本只有裴照南这一条路。但这个结局的内核是
+  // "有人愿意为真相守住一道门"——你在第5章保下、并在第8章
+  // 让她开口的温疏雨，同样是那个守门的人。
+  else if (
+    has("ch12_reform") &&
+    (has("ch7_pei_truth") || has("ch8_wen_testifies"))
+  )
+    id = "gatekeeper";
   else if (has("ch12_reform") || has("ending_jade_reform")) id = "jade-reform";
   else if (has("ch8_gu_ascends")) id = "minghua-alliance";
   else if (has("ch8_dual_rule")) id = "dual-palaces";

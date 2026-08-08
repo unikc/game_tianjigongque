@@ -1,4 +1,13 @@
 import type { Choice, Scene, StatKey } from "../types";
+import {
+  applyChapter5Patch,
+  applyWenShuyuThread,
+} from "./later-scenes-ch5-patch";
+import { applyUnreliableInfoPatch } from "./later-scenes-truth-patch";
+import {
+  applyChapter6Patch,
+  applyDownstreamHooks,
+} from "./later-scenes-ch6-patch";
 
 type SeedChoice = [text: string, outcome: string, tag: string];
 type Beat = [title: string, text: string, choices: SeedChoice[]];
@@ -127,24 +136,12 @@ const chapters: ChapterSeed[] = [
         ],
       ],
       [
-        "宫外一日",
-        "你随裴照南来到河堤。名册上的“三百户”是泥水里三千张等粮的脸。",
+        "（占位，不会展示）",
+        "（占位，不会展示）",
         [
-          [
-            "追查票号，把赃银路径钉死。",
-            "商路指向太后母族，今日的粥棚却少开了两处。",
-            "ch6_bank_trail",
-          ],
-          [
-            "留下组织放粮，放弃追赶账房。",
-            "灾民吃上热粥，携带总账的账房从水路逃走。",
-            "ch6_feed_people",
-          ],
-          [
-            "让裴照南追账，自己监督军粮。",
-            "你分开人手，保住半条证据链，也承担了彼此无法照应的风险。",
-            "ch6_split_force",
-          ],
+          ["（占位）", "（占位）", "ch6_placeholder_1"],
+          ["（占位）", "（占位）", "ch6_placeholder_2"],
+          ["（占位）", "（占位）", "ch6_placeholder_3"],
         ],
       ],
       [
@@ -678,6 +675,8 @@ export const laterScenes: Record<string, Scene> = Object.assign(
   {},
   ...[...chapters, ...later].map(createChapterScenes),
 );
+applyChapter5Patch(laterScenes);
+applyChapter6Patch(laterScenes);
 
 function laterChoice(id: string) {
   const found = Object.values(laterScenes)
@@ -781,3 +780,7 @@ laterChoice("day9_3_3").requiresTag = "ch9_arsonist_caught";
 // Evidence that has been gifted or discarded can no longer solve later scenes.
 laterScenes.day10_2.choices[0].requiresRewardId = "item-imperial-pearl";
 laterScenes.day11_1.choices[1].requiresRewardId = "item-empty-seal";
+
+applyDownstreamHooks(laterScenes);
+applyWenShuyuThread(laterScenes);
+applyUnreliableInfoPatch(laterScenes);
