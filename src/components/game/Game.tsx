@@ -304,6 +304,9 @@ function DialoguePanel({
     isChoiceAvailable(state, choice),
   );
   const chapterLabel = scene.chapterLabel ?? "第一日";
+  const progressLabel = scene.progress
+    ? `${scene.progress.current}/${scene.progress.total}`
+    : `${Math.min(state.history.length + 1, 6)}/6`;
   const progress = scene.progress
     ? (scene.progress.current / scene.progress.total) * 100
     : ((state.history.length + 1) / 6) * 100;
@@ -317,17 +320,18 @@ function DialoguePanel({
     backgrounds[scene.backgroundId ?? "palace-courtyard-day"];
   return (
     <div className="dialogue-screen">
-      <div className="topline">
+      <nav className="story-nav" aria-label="剧情导航">
+        <button className="story-back" onClick={onLeaveStory}>
+          <span aria-hidden="true">‹</span>
+          {state.rank ? "寝宫" : "暂离"}
+        </button>
         <span className="scene-index">
           {chapterLabel} · {scene.title}
         </span>
-        <div className="run-tools">
-          <SaveIndicator />
-          <button className="text-button" onClick={onLeaveStory}>
-            暂离
-          </button>
-        </div>
-      </div>
+        <span className="story-progress-count" aria-hidden="true">
+          {progressLabel}
+        </span>
+      </nav>
       <ProgressBar label={`${chapterLabel}章节进度`} value={progress} />
       <div
         className={`scene-head ${!scene.portrait ? "scene-head-illustrated" : ""}`}
@@ -531,21 +535,16 @@ function ImperialEdict({
   state,
   onFinish,
   onRestart,
-  onOpenJournal,
 }: {
   state: GameState;
   onFinish: (s: GameState) => void;
   onRestart: () => void;
-  onOpenJournal: () => void;
 }) {
   const result = evaluate(state);
   return (
     <div className="center edict-screen">
       <div className="topline journal-topline">
         <span className="eyebrow">御前裁定</span>
-        <button className="text-button" onClick={onOpenJournal}>
-          行录
-        </button>
       </div>
       <ChoiceOutcome state={state} />
       <div className="edict">
@@ -589,6 +588,7 @@ function RankReveal({
   onOpenJournal: () => void;
 }) {
   const result = evaluate(state);
+  const residence = residenceFor({ ...state, rank: state.rank ?? result.rank });
   const strongest = Object.entries(state.stats).sort(
     (a, b) => b[1] - a[1],
   )[0][0];
@@ -606,6 +606,9 @@ function RankReveal({
       <div className="center" style={{ minHeight: "auto" }}>
         <div className="plaque">初封 · {state.rank}</div>
         <h2>{archetype(state)}</h2>
+        <p className="rank-residence">
+          赐居 <b>{residence.name}</b> · {residence.trait}
+        </p>
       </div>
       <div className="summary">
         <p>
@@ -624,7 +627,7 @@ function RankReveal({
       </div>
       <div className="actions">
         <button className="primary" onClick={onNext}>
-          前往第二日
+          回到寝宫
         </button>
         <button className="secondary" onClick={onRestart}>
           重新开始
@@ -1298,15 +1301,19 @@ function ChapterHub({
                   )
                 }
               >
-                <span>修习</span>
-                <b>
+                <span className="action-name">修习</span>
+                <b className="action-result">
                   {studiedThisChapter
                     ? "本章已修"
                     : state.stats.体力 < 1
                       ? "体力不足"
                       : `成长 +${residence.id === "tingyu" ? 2 : 1}`}
                 </b>
-                <small>闲暇 −1 · 体力 −1 · 低调</small>
+                <small className="action-cost">
+                  <span>闲暇 −1</span>
+                  <span>体力 −1</span>
+                  <span>低调</span>
+                </small>
               </button>
               <button
                 disabled={state.actionPoints < 1 || attendedThisChapter}
@@ -1319,13 +1326,16 @@ function ChapterHub({
                   )
                 }
               >
-                <span>伴驾</span>
-                <b>
+                <span className="action-name">伴驾</span>
+                <b className="action-result">
                   {attendedThisChapter
                     ? "本章已伴驾"
                     : `宠爱 +${residence.id === "zhaoyang" ? 8 : 6}`}
                 </b>
-                <small>闲暇 −1 · 注目 +3</small>
+                <small className="action-cost">
+                  <span>闲暇 −1</span>
+                  <span>注目 +3</span>
+                </small>
               </button>
               <button
                 disabled={
@@ -1343,8 +1353,8 @@ function ChapterHub({
                   )
                 }
               >
-                <span>夜谈</span>
-                <b>
+                <span className="action-name">夜谈</span>
+                <b className="action-result">
                   {confidedThisChapter
                     ? "本章已夜谈"
                     : state.stats.体力 < 1
@@ -1353,7 +1363,11 @@ function ChapterHub({
                         ? "需帝驾在宫"
                         : `信任 +${residence.id === "fengyi" ? 7 : 5}`}
                 </b>
-                <small>闲暇 −1 · 体力 −1 · 注目 +1</small>
+                <small className="action-cost">
+                  <span>闲暇 −1</span>
+                  <span>体力 −1</span>
+                  <span>注目 +1</span>
+                </small>
               </button>
               <button
                 disabled={state.actionPoints < 1 || state.stats.银钱 < 1}
@@ -1364,13 +1378,17 @@ function ChapterHub({
                   )
                 }
               >
-                <span>走动</span>
-                <b>
+                <span className="action-name">走动</span>
+                <b className="action-result">
                   {state.stats.银钱 < 1
                     ? "银钱不足"
                     : `关系 +${residence.id === "chenglou" ? 15 : 10}`}
                 </b>
-                <small>闲暇 −1 · 银钱 −1 · 注目 +2</small>
+                <small className="action-cost">
+                  <span>闲暇 −1</span>
+                  <span>银钱 −1</span>
+                  <span>注目 +2</span>
+                </small>
               </button>
               <button
                 disabled={state.actionPoints < 1 || state.stats.体力 >= 10}
@@ -1381,13 +1399,16 @@ function ChapterHub({
                   )
                 }
               >
-                <span>休息</span>
-                <b>
+                <span className="action-name">休息</span>
+                <b className="action-result">
                   {state.stats.体力 >= 10
                     ? "体力已满"
                     : `体力 +${residence.id === "jinghe" ? 2 : 1}`}
                 </b>
-                <small>闲暇 −1 · 低调</small>
+                <small className="action-cost">
+                  <span>闲暇 −1</span>
+                  <span>低调</span>
+                </small>
               </button>
             </div>
             {actionFeedback && (
@@ -2104,7 +2125,6 @@ export default function Game() {
             state={state}
             onFinish={setState}
             onRestart={() => setConfirmingRestart(true)}
-            onOpenJournal={() => setScreen("hub")}
           />
         )}{" "}
         {screen === "play" && state && state.sceneId === "result" && (
@@ -2173,7 +2193,7 @@ export default function Game() {
           <DialoguePanel
             state={state}
             onChoose={choose}
-            onLeaveStory={() => setScreen("hub")}
+            onLeaveStory={() => setScreen(state.rank ? "hub" : "title")}
           />
         )}{" "}
       </div>

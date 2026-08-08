@@ -641,9 +641,46 @@ button:active {
   text-shadow: 0 2px 8px var(--ids-color-ink);
 }
 .scene-index {
+  min-width: 0;
+  overflow: hidden;
   font-size: 0.75rem;
   color: #756d5c;
   letter-spacing: 0.15em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.story-nav {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+}
+.story-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 62px;
+  min-height: 44px;
+  padding: 0 8px 0 2px;
+  border: 0;
+  background: transparent;
+  color: var(--cinnabar);
+  font-family: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+.story-back span {
+  font-family: var(--ids-font-ui);
+  font-size: 1.8rem;
+  line-height: 0;
+  transform: translateY(-1px);
+}
+.story-progress-count {
+  color: #756d5c;
+  font-family: var(--ids-font-ui);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
 }
 .portrait {
   width: 112px;
@@ -1120,6 +1157,14 @@ button:active {
   color: var(--cinnabar);
   letter-spacing: 0.22em;
   margin: 0.25em 0;
+}
+.rank-residence {
+  margin: 4px 0 0;
+  color: var(--ids-color-fog);
+  font: 0.78rem/1.5 var(--ids-font-ui);
+}
+.rank-residence b {
+  color: var(--ids-color-jade);
 }
 .plaque {
   display: inline-block;
@@ -2225,31 +2270,41 @@ button:active {
   grid-column: 1 / -1;
   margin: 0;
 }
-.palace-actions button small {
-  display: block;
-  margin-top: 3px;
+.palace-actions .action-cost {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1px 7px;
+  margin-top: 4px;
   color: var(--ids-color-fog);
-  font: 0.64rem/1.3 var(--ids-font-ui);
+  font: 0.68rem/1.3 var(--ids-font-ui);
 }
-.palace-actions button:disabled small {
+.palace-actions .action-cost span {
+  color: inherit;
+  white-space: nowrap;
+}
+.palace-actions button:disabled .action-cost {
   opacity: 0.7;
 }
 .palace-actions button {
-  min-height: 54px;
+  min-height: 76px;
+  padding: 7px 6px;
   border: 1px solid var(--ids-color-old-gold);
   background: var(--ids-color-cloud);
   color: var(--ids-color-ink);
 }
-.palace-actions span,
-.palace-actions b {
+.palace-actions .action-name,
+.palace-actions .action-result {
   display: block;
 }
-.palace-actions span {
+.palace-actions .action-name {
   color: var(--ids-color-imperial-red);
+  font-size: 0.92rem;
+  line-height: 1.2;
 }
-.palace-actions b {
+.palace-actions .action-result {
   margin-top: 3px;
-  font: 0.58rem var(--ids-font-ui);
+  font: 0.68rem/1.3 var(--ids-font-ui);
 }
 .palace-actions .action-economy span,
 .palace-actions .action-economy p {
@@ -2420,7 +2475,10 @@ button:active {
   }
   .compact .progress {
     flex: 0 0 3px;
-    margin-bottom: var(--ids-space-2);
+    margin-bottom: var(--ids-space-1);
+  }
+  .compact .story-nav {
+    margin: -4px 0 0;
   }
   .compact .scene-head {
     padding-bottom: var(--ids-space-2);
@@ -3652,20 +3710,18 @@ button:active {
   }
   .palace-actions button {
     min-width: 0;
-    min-height: 48px;
-    padding: 4px 2px;
+    min-height: 70px;
+    padding: 6px 3px;
   }
   .palace-actions {
     gap: 4px;
   }
-  .palace-actions span {
-    font-size: 0.72rem;
+  .palace-actions .action-name {
+    font-size: 0.8rem;
   }
-  .palace-actions b {
-    overflow: hidden;
-    font-size: 0.52rem;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .palace-actions .action-result,
+  .palace-actions .action-cost {
+    font-size: 0.6rem;
   }
   .player-home {
     position: relative;
@@ -3790,19 +3846,18 @@ button:active {
     gap: 6px;
   }
   .palace-actions button {
-    min-height: 60px;
-    padding: 8px 10px;
+    min-height: 68px;
+    padding: 7px 9px;
     text-align: left;
   }
-  .palace-actions button:last-child:nth-child(odd) {
+  .palace-actions > button:last-of-type {
     grid-column: 1 / -1;
   }
-  .palace-actions b {
-    font-size: 0.75rem;
+  .palace-actions .action-result,
+  .palace-actions .action-cost {
+    justify-content: flex-start;
+    font-size: 0.68rem;
     line-height: 1.35;
-    overflow: visible;
-    text-overflow: clip;
-    white-space: normal;
   }
   .reward-list article.reward-with-art {
     grid-template-columns: 96px minmax(0, 1fr);
