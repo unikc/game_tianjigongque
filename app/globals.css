@@ -5,6 +5,47 @@
   box-sizing: border-box;
 }
 
+/* ---------------------------------------------------------------------------
+ * 原生外壳（Capacitor / iOS WKWebView）体验修正。
+ * 这些规则消除 WebView 里最容易暴露"这是个网页"的几个破绽，
+ * 也是苹果 4.2 条款审核时的观感差异所在。桌面浏览器不受影响。
+ * ------------------------------------------------------------------------ */
+
+/* 长按不再弹出系统的"拷贝/查询"菜单——叙事正文允许选中，其余一律禁止 */
+button,
+[role="button"],
+.choice-button,
+nav,
+header,
+footer {
+  -webkit-user-select: none;
+  user-select: none;
+  /* 去掉 iOS 点击时的半透明灰块，改由组件自己的按压态表现 */
+  -webkit-tap-highlight-color: transparent;
+  /* 长按不弹出链接预览气泡 */
+  -webkit-touch-callout: none;
+}
+
+/* 正文保留选中能力：玩家可能想摘抄台词，这属于合理需求 */
+.dialogue,
+.dialogue p,
+.outcome-text {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+html {
+  /* 禁止整页橡皮筋回弹露出底色，滚动交给内部容器 */
+  overscroll-behavior: none;
+}
+
+body {
+  overscroll-behavior: none;
+  /* 屏幕旋转/键盘弹出时不自动缩放字号 */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 html,
 body {
   min-height: 100%;

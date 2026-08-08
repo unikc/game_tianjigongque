@@ -42,3 +42,14 @@ next-env.d.ts
 /work/
 /.pnpm-store/
 *.tsbuildinfo
+
+# Capacitor：iOS 项目里的 web 资源是 `cap sync` 从 out/ 复制的构建产物，
+# 每次构建都会变，不进版本库。克隆后跑 `pnpm ios:sync` 重新生成。
+/ios/App/App/public/
+/ios/App/App/capacitor.config.json
+/ios/App/CapApp-SPM/.build/
+/ios/DerivedData/
+/ios/App/Pods/
+
+# standalone 单文件构建的中间产物（脚本本身要进库，产物不进）
+/standalone/out/
