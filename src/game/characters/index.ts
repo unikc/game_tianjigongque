@@ -57,6 +57,21 @@ export const characters: Record<string, CharacterDefinition> = {
     zodiacIcon: "寅",
     abilities: ["直取", "主事", "御前声势"],
   },
+  archivist: {
+    id: "wei-yize",
+    name: "卫夷则",
+    rank: "天机阁主",
+    zodiac: "snake",
+    archetype: "听档者",
+    publicPersona: "从不断言将来，只说同一种笔迹从前出现在哪几卷里。",
+    hiddenMotivation: "让所有人的私事都存进同一本册子，于是谁都绕不开这座阁。",
+    // 她读不了任何东西，是别人读给她听；她的本事是记得听过的每一卷。
+    portrait: "/characters/wei-yize-archivist-v01.webp",
+    focalPoint: { x: 50, y: 15 },
+    expressions: {},
+    zodiacIcon: "巳",
+    abilities: ["听档", "旧例比对", "秘录留价"],
+  },
   eunuch: {
     id: "gao-fuan",
     name: "高福安",

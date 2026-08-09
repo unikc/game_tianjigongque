@@ -1,5 +1,6 @@
 import type { Scene } from "../types";
 import { laterScenes } from "./later-scenes";
+import { applyTianjiChapter4 } from "./tianji-scenes";
 export const scenes: Record<string, Scene> = {
   entry: {
     id: "entry",
@@ -958,3 +959,5 @@ export const scenes: Record<string, Scene> = {
   },
   ...laterScenes,
 };
+// 天机阁第4章入口：追加一条可绕过的侧枝，主线分支图不变。
+applyTianjiChapter4(scenes);

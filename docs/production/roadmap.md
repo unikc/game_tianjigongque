@@ -14,21 +14,21 @@
 
 ## Epic dashboard
 
-| ID  | Epic                     | Priority | Status    | Complexity | Dependencies           | Current owner        |
-| --- | ------------------------ | -------- | --------- | ---------- | ---------------------- | -------------------- |
-| F01 | 叙事记忆与策略画像基础   | P0       | `DONE`    | M          | E08、E11               | Gameplay / Codex     |
-| F02 | 政治合法性与体面台阶     | P0       | `DONE`    | L          | E08、晋位路线          | Gameplay + Narrative |
-| E01 | 太后·崔氏「最后一道墙」  | P1       | `DONE`    | XL         | F02、角色圣经          | Narrative            |
-| E02 | 谢明微「镜中敌手」       | P0       | `PLANNED` | XL         | F01、E08               | Narrative + Gameplay |
-| E03 | 天机阁主「盲眼史官」     | P0       | `PLANNED` | L          | E08、E11               | Narrative + Gameplay |
-| E04 | 前朝废后「已经赢过的人」 | P1       | `PLANNED` | L          | E08、E11               | Narrative            |
-| E05 | 必要的背叛               | P1       | `PLANNED` | XL         | E11、角色关系重量      | Narrative            |
-| E06 | 自证预言                 | P1       | `PLANNED` | L          | E03、F01               | Narrative + Gameplay |
-| E07 | 宫中内奸调查             | P0       | `DONE`    | XL         | E08、种子真相          | Gameplay + Narrative |
-| E08 | 文书权力与替罪弧         | P0       | `DONE`    | L          | 现有证据标签、现有结局 | Gameplay + Narrative |
-| E09 | 胜利与道德转型           | P1       | `PLANNED` | XL         | F01、结局整合          | Narrative            |
-| E10 | 十二章章首谶诗           | P2       | `PLANNED` | M          | E03、E06               | Narrative + Art      |
-| E11 | 延迟复仇                 | P0       | `DONE`    | L          | E08                    | Narrative + Gameplay |
+| ID  | Epic                     | Priority | Status    | Complexity | Dependencies           | Current owner                 |
+| --- | ------------------------ | -------- | --------- | ---------- | ---------------------- | ----------------------------- |
+| F01 | 叙事记忆与策略画像基础   | P0       | `DONE`    | M          | E08、E11               | Gameplay / Codex              |
+| F02 | 政治合法性与体面台阶     | P0       | `DONE`    | L          | E08、晋位路线          | Gameplay + Narrative          |
+| E01 | 太后·崔氏「最后一道墙」  | P1       | `DONE`    | XL         | F02、角色圣经          | Narrative                     |
+| E02 | 谢明微「镜中敌手」       | P0       | `PLANNED` | XL         | F01、E08               | Narrative + Gameplay          |
+| E03 | 天机阁主「盲眼史官」     | P0       | `DONE`    | L          | E08、E11、F01          | Narrative + Gameplay / Claude |
+| E04 | 前朝废后「已经赢过的人」 | P1       | `PLANNED` | L          | E08、E11               | Narrative                     |
+| E05 | 必要的背叛               | P1       | `PLANNED` | XL         | E11、角色关系重量      | Narrative                     |
+| E06 | 自证预言                 | P1       | `PLANNED` | L          | E03、F01               | Narrative + Gameplay          |
+| E07 | 宫中内奸调查             | P0       | `DONE`    | XL         | E08、种子真相          | Gameplay + Narrative          |
+| E08 | 文书权力与替罪弧         | P0       | `DONE`    | L          | 现有证据标签、现有结局 | Gameplay + Narrative          |
+| E09 | 胜利与道德转型           | P1       | `PLANNED` | XL         | F01、结局整合          | Narrative                     |
+| E10 | 十二章章首谶诗           | P2       | `PLANNED` | M          | E03、E06               | Narrative + Art               |
+| E11 | 延迟复仇                 | P0       | `DONE`    | L          | E08                    | Narrative + Gameplay          |
 
 ## Development order
 
@@ -47,14 +47,15 @@
 - **F01 — 叙事记忆与策略画像基础。** 已完成并通过质量门槛。
 - **F02 — 政治合法性与体面台阶。** 已完成并通过质量门槛。
 - **E01 — 太后·崔氏「最后一道墙」。** 已完成并通过质量门槛。
+- **E03 — 天机阁主「盲眼史官」。** 已完成并通过质量门槛。
 - **E07 — 宫中内奸调查。** 已完成并通过质量门槛。
 - **E08 — 文书权力与替罪弧。** 已完成并通过质量门槛。
 - **E11 — 延迟复仇。** 已完成并通过质量门槛。
 
 ## Next recommended task
 
-**E05 — 必要的背叛**
+**F03 — 晋位判定迁移到合法性依据**
 
-- 原因：调查、文书责任、延迟后果与角色关系重量已经具备，可以开始设计一次出于可理解动机、且真正改变可玩路线的背叛。
-- 第一步：先定义背叛者的承诺、无法同时保全的对象、可见预兆与三种玩家应对，再选择一个既有章节接入最小切片。
-- 验收：背叛必须由角色动机和玩家历史共同成立，不是随机反转；预兆可回看，损失不可被单一最优选择完全规避，且后续路线仍可玩。
+- 原因：F01 处世留痕与晋位数值门槛目前互不相通，玩家全程建立的行事方式不影响能走多远；F02 已验证「依据绑定职位与来源」的模型可用，E03 又让私密记忆成为可消费资源，迁移时机成熟。
+- 第一步：把第五、七、九章的三条晋位路线各改写为一条具名依据：帝心须引用皇帝公开采信的具体一事，清议须有两件正式入档且无异议的往事，人脉须有两名具名角色愿为某次具体行为署名。数值降为必要条件而非充分条件。
+- 验收：晋位提示显示具体事由而非纯数值；五种处世手段仍可并存且无优劣排序；旧存档不因迁移丢失既有位分；第十二章凤位不再存在纯数值路线。

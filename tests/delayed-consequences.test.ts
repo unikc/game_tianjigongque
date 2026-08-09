@@ -75,10 +75,12 @@ describe("delayed consequences", () => {
   });
 
   it("defines multiple targets and at least three responses per grievance", () => {
-    expect(delayedConsequences).toHaveLength(3);
+    // 顾明华 / 高福安 / 裴照南 / 卫夷则（E03 秘录册）
+    expect(delayedConsequences).toHaveLength(4);
+    // 四笔旧账仍只打击四个互不重叠的系统：位分、证据、军令、叙述权。
     expect(
       new Set(delayedConsequences.map((item) => item.target.kind)).size,
-    ).toBe(3);
+    ).toBe(4);
     delayedConsequences.forEach((item) => {
       expect(item.responses.length).toBeGreaterThanOrEqual(3);
       expect(item.causes[0].label).not.toBe("");

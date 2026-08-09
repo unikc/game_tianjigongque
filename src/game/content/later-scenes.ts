@@ -9,6 +9,8 @@ import {
   applyDownstreamHooks,
 } from "./later-scenes-ch6-patch";
 import { xieReviewBaseChoices } from "../state/xie-mingwei";
+import { applyTianjiTrades, applyTianjiLedger } from "./tianji-scenes";
+import { applyTianjiPayoff } from "./tianji-payoff-patch";
 
 type SeedChoice = [text: string, outcome: string, tag: string];
 type Beat = [title: string, text: string, choices: SeedChoice[]];
@@ -678,6 +680,9 @@ export const laterScenes: Record<string, Scene> = Object.assign(
 );
 applyChapter5Patch(laterScenes);
 applyChapter6Patch(laterScenes);
+applyTianjiTrades(laterScenes);
+applyTianjiPayoff(laterScenes);
+applyTianjiLedger(laterScenes);
 
 laterScenes.day10_legitimacy_veto = {
   id: "day10_legitimacy_veto",

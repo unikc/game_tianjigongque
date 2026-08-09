@@ -152,6 +152,40 @@ export const delayedConsequences: DelayedConsequence[] = [
       { id: "absorb-cost", label: "绕过她下令并承担私令责任" },
     ],
   },
+  {
+    id: "tianji-ledger-called-in",
+    instigator: "卫夷则",
+    causes: [
+      {
+        tag: "secret_source:tianji",
+        chapter: 4,
+        weight: 2,
+        label: "玩家为换取谶语，亲口把私密往事写进了秘录册。",
+        // 烧册是唯一的化解方式：只要册子还在，说过的话就还在。
+        cancelTags: ["tianji_ledger_burned"],
+      },
+    ],
+    knowledge: [
+      {
+        channel: "direct",
+        label: "她本人经手：秘密是玩家当面口述、由她落笔记下的。",
+        requires: { any: ["secret_source:tianji"] },
+      },
+    ],
+    delayChapters: 2,
+    timingLabel: "至少两章后，当册子比证据更有用时",
+    target: { kind: "reputation", label: "叙述权：别人如何讲述你这个人" },
+    // 她不是仇人。关系再好，册子也不会消失——这正是这条旧账的特别之处：
+    // 它不由敌意驱动，只由「不赊」这条规矩驱动。
+    defuseTags: ["tianji_ledger_burned"],
+    resolvedStoryId: "tianji-ledger-audit",
+    responses: [
+      { id: "confront", label: "一行一行认下并补出名字" },
+      { id: "procedure", label: "抢先自行公开" },
+      { id: "bargain", label: "用更重的一卷换回册页" },
+      { id: "absorb-cost", label: "沉默，承担被叙述的样子" },
+    ],
+  },
 ];
 
 export function delayedConsequenceStatus(

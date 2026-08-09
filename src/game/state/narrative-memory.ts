@@ -302,6 +302,140 @@ const definitions: readonly NarrativeMemoryDefinition[] = [
     strategies: ["coalition", "care"],
     provenance: ["choice:day6_3_1", "document:relief-order"],
   },
+  // ── 第3章新增私密记忆 ────────────────────────────────────────────────
+  // 这三条都是只有玩家自己知道的判断或行动——没有当事人，
+  // 没有旁证，没有进档。它们是天机阁的货源，也是晋位依据的基础。
+  {
+    id: "incense-private-retest",
+    chapter: "chapter-3",
+    sceneId: "day3_physician",
+    sourceChoiceId: "day3_private_test",
+    label: "毒验私留",
+    detail: "你暂不入档，只请温疏雨做第二次验毒，把结论先压在自己手里。",
+    sourceActors: [],
+    visibility: "private",
+    strategies: ["leverage"],
+    provenance: ["choice:day3_private_test"],
+  },
+  {
+    id: "incense-lid-sealed",
+    chapter: "chapter-3",
+    sceneId: "day3_pearl",
+    sourceChoiceId: "day3_preserve_lid",
+    label: "封存盒盖",
+    detail: "你没有急着证明来处，先封存盒盖，让物证完整地留在你手里。",
+    sourceActors: [],
+    visibility: "private",
+    strategies: ["procedure", "leverage"],
+    provenance: ["choice:day3_preserve_lid"],
+  },
+  {
+    id: "incense-gao-pearl-compare",
+    chapter: "chapter-3",
+    sceneId: "day3_pearl",
+    sourceChoiceId: "day3_ask_gao",
+    label: "私下比照",
+    detail: "你请高福安暗取御库废料，只在私下比照，没有写进任何一份记录。",
+    sourceActors: ["高福安"],
+    visibility: "actor",
+    strategies: ["leverage"],
+    provenance: ["choice:day3_ask_gao"],
+  },
+  {
+    id: "incense-traded-silence",
+    chapter: "chapter-3",
+    sceneId: "day3_accusation",
+    sourceChoiceId: "day3_trade_silence",
+    label: "以账换人",
+    detail:
+      "你把作坊账页私下交给顾明华，换她提供真正的经手人，这笔交换没有第三个人知道。",
+    sourceActors: ["顾明华"],
+    visibility: "actor",
+    strategies: ["leverage"],
+    provenance: ["choice:day3_trade_silence"],
+  },
+  // ── 第4章新增私密记忆 ────────────────────────────────────────────────
+  {
+    id: "blank-seal-marks-only",
+    chapter: "chapter-4",
+    sceneId: "day4_blank_seal",
+    sourceChoiceId: "day4_copy_marks",
+    label: "只记水纹",
+    detail:
+      "你记下纸张水纹与印边缺口，再让高福安带走原件，自己没有留下任何书面痕迹。",
+    sourceActors: ["高福安"],
+    visibility: "actor",
+    strategies: ["leverage"],
+    provenance: ["choice:day4_copy_marks"],
+  },
+  {
+    id: "ledger-signature-test",
+    chapter: "chapter-4",
+    sceneId: "day4_cart",
+    sourceChoiceId: "day4_test_signature",
+    label: "先对笔锋",
+    detail:
+      "你用旧军报私下比对末页笔锋，在决定是否上报之前先确认了字迹是真是假。",
+    sourceActors: [],
+    visibility: "private",
+    strategies: ["procedure", "leverage"],
+    provenance: ["choice:day4_test_signature", "document:military-ledger"],
+  },
+  // ── 天机阁（E03）────────────────────────────────────────────────────
+
+  // 注意这四条的 visibility 都不是 private：与阁主的往来本身不是秘密，
+  // 秘密是你**交给**她的那些事。交出去的秘密不在这里另记一条——
+  // 它们仍然是原来那条私密记忆，只是多了一个 `secret_surrendered:` 标签。
+  // 这样「你交出去的确实是你做过的那件事」才成立，而不是凭空生成一条。
+  {
+    id: "tianji-first-price",
+    chapter: "chapter-4",
+    sceneId: "tianji_intro_2",
+    sourceChoiceId: "tianji_intro_price",
+    label: "阁上无灯",
+    detail:
+      "你问清了天机阁的规矩：这里不收银钱，只收一件没有第二个人知道的事。",
+    sourceActors: ["卫夷则"],
+    visibility: "actor",
+    strategies: ["leverage"],
+    provenance: ["choice:tianji_intro_price"],
+  },
+  {
+    id: "tianji-declined-early",
+    chapter: "chapter-4",
+    sceneId: "tianji_intro_2",
+    sourceChoiceId: "tianji_intro_refuse",
+    label: "阁上无灯",
+    detail: "你告诉阁主，你大概永远问不起她的价。",
+    sourceActors: ["卫夷则"],
+    visibility: "actor",
+    strategies: ["procedure"],
+    provenance: ["choice:tianji_intro_refuse"],
+  },
+  {
+    id: "tianji-ledger-owned",
+    chapter: "chapter-11",
+    sceneId: "tianji_ledger_called",
+    sourceChoiceId: "tianji_ledger_own",
+    label: "册子上的那几行",
+    detail: "秘录被当众念出时，你一行一行认下，并说出每一件事当时是为了谁。",
+    sourceActors: ["卫夷则"],
+    visibility: "public",
+    strategies: ["command", "care"],
+    provenance: ["choice:tianji_ledger_own"],
+  },
+  {
+    id: "tianji-ledger-preempted",
+    chapter: "chapter-11",
+    sceneId: "tianji_ledger_called",
+    sourceChoiceId: "tianji_ledger_preempt",
+    label: "册子上的那几行",
+    detail: "你抢过话头，把册子上还没念到的部分也一并念完。",
+    sourceActors: ["卫夷则"],
+    visibility: "public",
+    strategies: ["command"],
+    provenance: ["choice:tianji_ledger_preempt"],
+  },
 ] as const;
 
 // Choice history is the canonical source: result tags may be shared by several

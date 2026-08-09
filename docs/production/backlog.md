@@ -80,7 +80,7 @@ Status and completion rules are defined by `AGENTS/ImperialProducer.md`. Complex
 - **Acceptance criteria:** Every use feels helpful and slightly dangerous; her ledger can become more threatening than the player's evidence.
 - **Risks:** Supernatural omniscience; duplicating Gao; disability used as exotic shorthand.
 - **Future hooks:** Archive trial, secret ransom, authored/forged prophecy.
-- **Notes:** Her loss of sight remains unexplained at introduction and must not imply magical sight.
+- **Notes:** Completed. 天机阁实现为 `hidden-truth` 的玩家界面而非独立系统：谶语只产出 `tianji_hint:*` / `tianji_excluded:*`，signpost 类文本与真相无关（有测试断言两个相反种子输出一字不差），exclusion 类只划掉一个假选项。价目取自 `narrative-memory` 中 `visibility === "private"` 的真实记忆，因此全程走明路的玩家无秘可付、买不到谶语——这是取舍不是门槛。交出的秘密以 `direct` 渠道形成 `tianji-ledger-called-in` 延迟旧账，唯一化解方式是第九章宫火中烧掉册子。她的失明在登场时不作解释，与能力不构成因果：她的本事是听过太多卷档，不是通神。详见 `docs/narrative/tianji-pavilion.md`。
 
 ## E04 — 前朝废后「已经赢过的人」
 

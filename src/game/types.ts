@@ -15,7 +15,8 @@ export type RelationKey =
   | "高福安"
   | "林栖梧"
   | "温疏雨"
-  | "裴照南";
+  | "裴照南"
+  | "卫夷则";
 export type OriginId = "scholar" | "merchant" | "general";
 export type ZodiacId = "rabbit" | "tiger" | "monkey" | "ox";
 export type Effect = {
@@ -57,13 +58,27 @@ export type PromotionDecision = {
   to?: Rank;
   status: "promoted" | "held" | "none";
   route?: PromotionRoute;
-  criteria: Array<{ route: PromotionRoute; met: boolean; label: string }>;
+  /** 晋位成立时的具名依据句。取代纯数字标签显示给玩家。 */
+  reason?: string;
+  criteria: Array<{
+    route: PromotionRoute;
+    met: boolean;
+    label: string;
+    basisHint?: string;
+  }>;
 };
 export type Scene = {
   id: string;
   title: string;
   speaker?: string;
-  portrait?: "dowager" | "xie" | "queen" | "zhaoyi" | "eunuch" | "duck";
+  portrait?:
+    | "dowager"
+    | "xie"
+    | "queen"
+    | "zhaoyi"
+    | "eunuch"
+    | "archivist"
+    | "duck";
   portraitLabel?: string;
   backgroundId?: string;
   chapterLabel?: string;

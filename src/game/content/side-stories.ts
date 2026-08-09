@@ -242,6 +242,131 @@ export const sideStories: SideStory[] = [
     ],
   },
   {
+    id: "tianji-ledger-audit",
+    eyebrow: "秘录副本 · 欠录",
+    title: "阁中传来的一页抄件",
+    danger: true,
+    text:
+      "一名不认识的小内侍送来一页抄件，没有落款。抄的是你自己说过的话——" +
+      "一字不差，连你当时的停顿都用朱点标了出来。\n\n" +
+      "纸背只有一行小字：“存档已满三件，按例知会本人。”\n\n" +
+      "这不是勒索。天机阁从不勒索。她只是在告诉你：册子已经厚到能讲出一个关于你的故事了。",
+    available: (state) =>
+      isDelayedConsequenceReady(state, "tianji-ledger-called-in"),
+    choices: [
+      {
+        id: "tianji_audit_request_copy",
+        text: "回请一份完整抄件，看看她究竟记了什么。",
+        outcome:
+          "抄件送来了，比你记得的更全。你第一次从别人的笔下读到自己——" +
+          "每一件都是真的，连起来却像另一个人。你把它收进箱底，从此知道对手会看到什么。",
+        effect: {
+          stats: { 谋略: 1 },
+          relations: { 卫夷则: 2 },
+          tags: ["tianji_ledger_read"],
+        },
+      },
+      {
+        id: "tianji_audit_buy_back",
+        text: "出重金赎回那三页。",
+        outcome:
+          "银钱退了回来，附一句话：“进了册子的，不用钱赎。”你只损失了一次试探，" +
+          "以及她从此知道你在意什么。",
+        effect: {
+          stats: { 银钱: -3, 名望: -1 },
+          relations: { 卫夷则: -2 },
+          tags: ["tianji_buyback_refused"],
+        },
+        requiresStat: { stat: "银钱", min: 3 },
+      },
+      {
+        id: "tianji_audit_preempt_self",
+        text: "先一步把这三件事告诉沈令仪，由你自己的口说出来。",
+        outcome:
+          "皇后听完没有责难，只问了一句：“还有吗？”——你说没有了。" +
+          "秘密仍然存在，但它不再是别人手里独有的东西。",
+        effect: {
+          stats: { 胆识: 1, 名望: 1 },
+          relations: { 沈令仪: 3 },
+          tags: ["tianji_ledger_pre_disclosed"],
+        },
+      },
+      {
+        id: "tianji_audit_ignore",
+        text: "把抄件烧了，当作没有收到。",
+        outcome:
+          "纸烧得很快。烧掉的只是抄件——原本仍在西苑那座没有灯的楼里，摊在案上。",
+        effect: { stats: { 体力: -1 }, tags: ["tianji_notice_ignored"] },
+      },
+    ],
+  },
+  {
+    id: "tianji-ledger-fire",
+    eyebrow: "秘录副本 · 火中",
+    title: "西苑那座楼也在烧",
+    danger: true,
+    text:
+      "十二宫的火没有停在十二宫。风向偏了，西苑的阁楼也着了。\n\n" +
+      "你赶到时，卫夷则站在阶下没有动。她看不见火，但她听得见哪一架在塌。" +
+      "“东边第三架。”她说，“那一架上有你。”\n\n" +
+      "没有人拦你。她也没有说该救哪一架。",
+    available: (state) =>
+      state.completedChapters.length >= 8 &&
+      state.tags.includes("secret_source:tianji") &&
+      !state.tags.includes("tianji_ledger_burned"),
+    choices: [
+      {
+        id: "tianji_fire_take_own",
+        text: "冲进去，只抱走有你那几页的那一架。",
+        outcome:
+          "你抱着自己的册页出来，手上烧了两处。身后还有一整座阁在塌——" +
+          "别人的名字你一页也没有救。卫夷则始终没有说话。",
+        effect: {
+          stats: { 体力: -3, 胆识: 1, 名望: -1 },
+          relations: { 卫夷则: -4 },
+          tags: ["tianji_ledger_burned", "tianji_saved_only_self"],
+        },
+        requiresStat: { stat: "体力", min: 3 },
+      },
+      {
+        id: "tianji_fire_save_archive",
+        text: "先救最靠外的那几架——那里的名字最多。",
+        outcome:
+          "你救出了整整四架旧档，其中没有一架是你的。你的三页烧掉了，" +
+          "连同别人再也无法用它讲述你的可能。这不是你选的结果，只是你选的顺序带来的。",
+        effect: {
+          stats: { 体力: -3, 名望: 2 },
+          relations: { 卫夷则: 8 },
+          tags: ["tianji_ledger_burned", "tianji_saved_archive"],
+        },
+        requiresStat: { stat: "体力", min: 3 },
+      },
+      {
+        id: "tianji_fire_lead_her_out",
+        text: "不救册子，先把她扶出去。",
+        outcome:
+          "她起初不肯走，说这里每一架她都听得出来。你还是把她带了出来。" +
+          "阁烧了大半，你的那几页不知去向——她记得，但她的记忆不能当证据。",
+        effect: {
+          stats: { 体力: -2, 人情: 1 },
+          relations: { 卫夷则: 10 },
+          tags: ["tianji_archivist_saved", "tianji_ledger_unverifiable"],
+        },
+      },
+      {
+        id: "tianji_fire_stand_back",
+        text: "站在阶下，看着它烧完。",
+        outcome:
+          "火自己停了。烧掉了三成，你的那一架不在其中。" +
+          "卫夷则转过身：“东边第三架还在。你听见了吗？”",
+        effect: {
+          stats: { 名望: -1 },
+          tags: ["tianji_watched_burn"],
+        },
+      },
+    ],
+  },
+  {
     id: "pearl-false-edict",
     eyebrow: "帝心副本 · 御赐",
     title: "东珠照出的假口谕",

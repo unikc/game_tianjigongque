@@ -1,5 +1,6 @@
 import type { Choice, GameState, Scene } from "../types";
 import { deriveTruths, type LeakLink } from "./hidden-truth";
+import { tianjiExcludedLink } from "../content/tianji-payoff-patch";
 
 export type CanaryRecord = {
   link: LeakLink;
@@ -95,20 +96,29 @@ export function buildLeakReturnScene(state: GameState): Scene {
     choices: [
       ...leakCanaries.map((record) => {
         const correct = record.link === truth;
+        // 天机阁划掉的那一段：玩家已确知它是干净的，因此不再是一条
+        // 可以走错的路。选项保留但改写为「已排除」，避免玩家误以为
+        // 多了一条新路——谶语减少的是错路，不是增加正路。
+        const excluded = tianjiExcludedLink(state.tags) === record.link;
         const known = correct && hasIndependentEvidence;
         const base = consequenceFor[record.link];
         return {
           id: `day9_leak_accuse_${record.link}`,
-          text: labelFor[record.link],
-          outcome: correct
-            ? known
-              ? "回流痕迹与第二份记录对上了。你封住失守环节，只追问经手次序，没有把代表人物写成现成的罪名。"
-              : "这条链被暂时封住，第二次删改没有发生；但单凭一次回流，你仍只掌握一项有力推断。"
-            : "这条链上的异样另有旧因。无辜的经手者被停了差，真正失守的环节也因此多出一夜改路。",
+          text: excluded
+            ? `${labelFor[record.link]}（阁中已划去此段）`
+            : labelFor[record.link],
+          outcome: excluded
+            ? "你还是封了这一段。阁中说过它是干净的——你花了一件私事换来的话，自己没有用上。"
+            : correct
+              ? known
+                ? "回流痕迹与第二份记录对上了。你封住失守环节，只追问经手次序，没有把代表人物写成现成的罪名。"
+                : "这条链被暂时封住，第二次删改没有发生；但单凭一次回流，你仍只掌握一项有力推断。"
+              : "这条链上的异样另有旧因。无辜的经手者被停了差，真正失守的环节也因此多出一夜改路。",
           effect: {
             ...base,
             tags: [
               ...(base.tags ?? []),
+              ...(excluded ? ["tianji_advice_ignored"] : []),
               `belief_leak:${record.link}`,
               `accused_link:${record.link}`,
               ...(known ? [`known_leak_link:${record.link}`] : []),

@@ -13,6 +13,12 @@ import type {
   ZodiacId,
 } from "../types";
 import { relationshipProfiles, relationKeys } from "../relationships";
+import {
+  basisMet,
+  basisText,
+  promotionBases,
+  promotionReason,
+} from "./promotion-basis";
 export const SAVE_KEY = "tianji-palace-save";
 
 /**
@@ -219,6 +225,15 @@ export function applyEffect(
   };
 }
 
+/**
+ * 晋位里程碑。
+ *
+ * 每条路线现在有两层门槛：
+ *   1. 数值下限（必要条件）——保证晋位节奏不会因为一次幸运选择而崩坏。
+ *   2. 具名依据（充分条件）——`promotion-basis.ts` 里登记的具体往事。
+ *
+ * 两者同时满足才晋位。
+ */
 const promotionMilestones: Array<{
   chapter: number;
   rank: Rank;
@@ -231,70 +246,138 @@ const promotionMilestones: Array<{
     chapter: 5,
     rank: "嫔",
     routes: {
-      帝心: (s) => s.emperor.favor >= 18 && s.emperor.trust >= 10,
-      清议: (s) => s.stats.名望 >= 4 && coreStats.some((k) => s.stats[k] >= 5),
+      帝心: (s) =>
+        s.emperor.favor >= 18 &&
+        s.emperor.trust >= 10 &&
+        basisMet(
+          s,
+          promotionBases.find((b) => b.id === "pin-imperial-public-trust")!,
+        ),
+      清议: (s) =>
+        s.stats.名望 >= 4 &&
+        coreStats.some((k) => s.stats[k] >= 5) &&
+        basisMet(
+          s,
+          promotionBases.find((b) => b.id === "pin-merit-official-record")!,
+        ),
       人脉: (s) =>
         Math.max(...Object.values(s.relations)) >= 20 &&
-        Object.values(s.relations).reduce((sum, value) => sum + value, 0) >= 10,
+        Object.values(s.relations).reduce((sum, v) => sum + v, 0) >= 10 &&
+        basisMet(
+          s,
+          promotionBases.find((b) => b.id === "pin-network-key-ally")!,
+        ),
     },
     labels: {
-      帝心: "宠爱18 · 信任10",
-      清议: "名望4 · 一项修习5",
-      人脉: "一人亲近20 · 总人脉10",
+      帝心: "宠爱18 · 信任10 · 御前独立判断",
+      清议: "名望4 · 一项修习5 · 正式入档往事",
+      人脉: "一人亲近20 · 总人脉10 · 为具体人出手",
     },
   },
   {
     chapter: 7,
     rank: "妃",
     routes: {
-      帝心: (s) => s.emperor.favor >= 30 && s.emperor.trust >= 20,
+      帝心: (s) =>
+        s.emperor.favor >= 30 &&
+        s.emperor.trust >= 20 &&
+        basisMet(
+          s,
+          promotionBases.find(
+            (b) => b.id === "fei-imperial-demonstrated-judgment",
+          )!,
+        ),
       清议: (s) =>
         s.stats.名望 >= 6 &&
-        coreStats.filter((k) => s.stats[k] >= 6).length >= 2,
+        coreStats.filter((k) => s.stats[k] >= 6).length >= 2 &&
+        basisMet(
+          s,
+          promotionBases.find((b) => b.id === "fei-merit-two-records")!,
+        ),
       人脉: (s) =>
-        Object.values(s.relations).filter((v) => v >= 20).length >= 2,
+        Object.values(s.relations).filter((v) => v >= 20).length >= 2 &&
+        basisMet(
+          s,
+          promotionBases.find((b) => b.id === "fei-network-second-alliance")!,
+        ),
     },
     labels: {
-      帝心: "宠爱30 · 信任20",
-      清议: "名望6 · 两项修习6",
-      人脉: "两人亲近20",
+      帝心: "宠爱30 · 信任20 · 大局独立判断",
+      清议: "名望6 · 两项修习6 · 两件正式记录",
+      人脉: "两人亲近20 · 两位具名盟友有往事",
     },
   },
   {
     chapter: 9,
     rank: "贵妃",
     routes: {
-      帝心: (s) => s.emperor.favor >= 42 && s.emperor.trust >= 30,
+      帝心: (s) =>
+        s.emperor.favor >= 42 &&
+        s.emperor.trust >= 30 &&
+        basisMet(
+          s,
+          promotionBases.find((b) => b.id === "guifei-imperial-high-stakes")!,
+        ),
       清议: (s) =>
         s.stats.名望 >= 7 &&
         coreStats.filter((k) => s.stats[k] >= 7).length >= 2 &&
-        s.rewards.filter((r) => r.kind !== "title").length >= 2,
+        s.rewards.filter((r) => r.kind !== "title").length >= 2 &&
+        basisMet(
+          s,
+          promotionBases.find((b) => b.id === "guifei-merit-evidence-chain")!,
+        ),
       人脉: (s) =>
         Object.values(s.relations).filter((v) => v >= 30).length >= 2 &&
-        Object.values(s.relationshipStrain).every((v) => v < 2),
+        Object.values(s.relationshipStrain).every((v) => v < 2) &&
+        basisMet(
+          s,
+          promotionBases.find(
+            (b) => b.id === "guifei-network-no-public-enemies",
+          )!,
+        ),
     },
     labels: {
-      帝心: "宠爱42 · 信任30",
-      清议: "名望7 · 两项修习7 · 两件证物",
-      人脉: "两人亲近30 · 无长期敌对",
+      帝心: "宠爱42 · 信任30 · 御前关乎大局的决断",
+      清议: "名望7 · 两项修习7 · 两件证物 · 文书链",
+      人脉: "两人亲近30 · 无长期敌对 · 多场合出手",
     },
   },
   {
     chapter: 11,
     rank: "皇贵妃",
     routes: {
-      帝心: (s) => s.emperor.favor >= 52 && s.emperor.trust >= 40,
+      帝心: (s) =>
+        s.emperor.favor >= 52 &&
+        s.emperor.trust >= 40 &&
+        basisMet(
+          s,
+          promotionBases.find(
+            (b) => b.id === "huangguifei-imperial-trust-across-crisis",
+          )!,
+        ),
       清议: (s) =>
         s.stats.名望 >= 8 &&
-        coreStats.filter((k) => s.stats[k] >= 7).length >= 3,
+        coreStats.filter((k) => s.stats[k] >= 7).length >= 3 &&
+        basisMet(
+          s,
+          promotionBases.find(
+            (b) => b.id === "huangguifei-merit-institutional",
+          )!,
+        ),
       人脉: (s) =>
         Object.values(s.relations).filter((v) => v >= 40).length >= 2 &&
-        s.resolvedSideStories.length >= 1,
+        s.resolvedSideStories.length >= 1 &&
+        basisMet(
+          s,
+          promotionBases.find(
+            (b) => b.id === "huangguifei-network-cross-chapter",
+          )!,
+        ),
     },
     labels: {
-      帝心: "宠爱52 · 信任40",
-      清议: "名望8 · 三项修习7",
-      人脉: "两人亲近40 · 完成一次暗线",
+      帝心: "宠爱52 · 信任40 · 数次危局无替罪",
+      清议: "名望8 · 三项修习7 · 跨章节文书链",
+      人脉: "两人亲近40 · 完成暗线 · 三章以上出手",
     },
   },
   {
@@ -338,18 +421,45 @@ export function evaluatePromotion(
     return { from, status: "none", criteria: [] };
   if (!next.routes)
     return { from, to: next.rank, status: "promoted", criteria: [] };
+
+  const rankForBasis = next.rank as "嫔" | "妃" | "贵妃" | "皇贵妃" | "皇后";
   const criteria = (Object.keys(next.routes) as PromotionRoute[]).map(
-    (route) => ({
-      route,
-      met: next.routes![route](state),
-      label: next.labels![route],
-    }),
+    (route) => {
+      const met = next.routes![route](state);
+      const basisHint =
+        !met && rankForBasis !== "皇后"
+          ? basisText(
+              state,
+              rankForBasis as "嫔" | "妃" | "贵妃" | "皇贵妃",
+              route,
+            ).text
+          : undefined;
+      return { route, met, label: next.labels![route], basisHint };
+    },
   );
-  const route = criteria.find((item) => item.met)?.route;
-  return route
-    ? { from, to: next.rank, status: "promoted", route, criteria }
-    : { from, to: next.rank, status: "held", criteria };
+
+  const winningRoute = criteria.find((c) => c.met)?.route;
+  if (winningRoute) {
+    const reason =
+      rankForBasis !== "皇后"
+        ? promotionReason(
+            state,
+            rankForBasis as "嫔" | "妃" | "贵妃" | "皇贵妃",
+            winningRoute,
+          )
+        : "";
+    return {
+      from,
+      to: next.rank,
+      status: "promoted",
+      route: winningRoute,
+      reason: reason || undefined,
+      criteria,
+    };
+  }
+  return { from, to: next.rank, status: "held", criteria };
 }
+
 export function seeded(seed: number) {
   let x = seed % 2147483647;
   if (x <= 0) x += 2147483646;

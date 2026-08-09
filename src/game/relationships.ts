@@ -16,6 +16,7 @@ export const relationshipProfiles: Record<RelationKey, RelationshipProfile> = {
   林栖梧: { label: "信赖", knownAfter: 1, initialValue: 0 },
   温疏雨: { label: "医者信任", knownAfter: 2, initialValue: 0 },
   裴照南: { label: "并肩与托付", knownAfter: 3, initialValue: 0 },
+  卫夷则: { label: "交换与欠录", knownAfter: 4, initialValue: 0 },
 };
 
 export const relationKeys = Object.keys(relationshipProfiles) as RelationKey[];

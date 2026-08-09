@@ -26,6 +26,12 @@ import { storyArc } from "../../game/content/story-arc";
 import { zodiacs } from "../../game/content/zodiacs";
 import { isChoiceAvailable } from "../../game/state/availability";
 import {
+  buildTianjiTradeScene,
+  buildLedgerScene,
+  tianjiTradeScenes,
+  ledgerReturnTarget,
+} from "../../game/content/tianji-scenes";
+import {
   deriveStrategyProfile,
   strategyModes,
 } from "../../game/state/narrative-memory";
@@ -384,7 +390,11 @@ function DialoguePanel({
       ? buildXieReviewScene(state)
       : state.sceneId === "day9_leak_return"
         ? buildLeakReturnScene(state)
-        : scenes[state.sceneId];
+        : state.sceneId in tianjiTradeScenes
+          ? buildTianjiTradeScene(state, state.sceneId)
+          : state.sceneId === "tianji_ledger_called"
+            ? buildLedgerScene(state, ledgerReturnTarget)
+            : scenes[state.sceneId];
   const availableChoices = scene.choices.filter((choice) =>
     isChoiceAvailable(state, choice),
   );
@@ -1048,6 +1058,9 @@ function LaterChapterResult({
             <span aria-hidden="true">晋</span>
             <small>{promotion.route}进阶</small>
             <strong>{promotion.to}</strong>
+            {promotion.reason && (
+              <p className="promotion-reason">{promotion.reason}</p>
+            )}
           </div>
         )}
         {promotion.status === "held" && promotion.to && (
@@ -1059,6 +1072,11 @@ function LaterChapterResult({
               {promotion.criteria.map((route) => (
                 <span key={route.route} data-met={route.met}>
                   {route.route} {route.met ? "已达成" : route.label}
+                  {!route.met && route.basisHint && (
+                    <span className="promotion-basis-hint">
+                      {route.basisHint}
+                    </span>
+                  )}
                 </span>
               ))}
             </div>
@@ -1180,6 +1198,16 @@ const palaceContacts: PalaceContact[] = [
     focalPoint: "50% 17%",
     knownAfter: 2,
     bond: { kind: "court", key: "温疏雨" },
+  },
+  {
+    id: "wei-yize",
+    name: characters.archivist.name,
+    rank: characters.archivist.rank,
+    description: characters.archivist.publicPersona,
+    portrait: characters.archivist.portrait,
+    focalPoint: "50% 20%",
+    knownAfter: 4,
+    bond: { kind: "court", key: "卫夷则" },
   },
   {
     id: "pei-zhaonan",

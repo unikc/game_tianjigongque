@@ -452,7 +452,11 @@ describe("game engine", () => {
     const state = createGame("巡检", "scholar", 121, "rabbit");
     state.sceneId = "day4_blank_seal";
     walk(state);
-    expect(completed).toBe(243);
+    // 243 = 3^5（原始雨夜分支）。天机阁在 day4_three_orders 上追加了一条
+    // 可绕过的侧枝，使该场景的分支因子从 3 变为 20：
+    //   原路 3 + 阁楼 (2 条通往 tianji_intro_2 × 2 选项 × 4 交易分支 + 1 条直接退出) = 20
+    // 因此 81 × 20 = 1620。主线本身未被改动。
+    expect(completed).toBe(1620);
   });
 
   it("resolves chapters five through twelve without broken branches", () => {
@@ -494,32 +498,53 @@ describe("game engine", () => {
       "chapter-3",
       "chapter-4",
     ];
-    expect(evaluatePromotion(base, "chapter-5").status).toBe("held");
+    // 纯数值满足时仍然 held，因为没有具名依据。
+    const numericsOnly = structuredClone(base);
+    numericsOnly.emperor = { favor: 18, trust: 10 };
+    expect(evaluatePromotion(numericsOnly, "chapter-5").status).toBe("held");
 
+    // 帝心：数值 + 具名依据（御前认下绣鸭 = duck_admit）。
     const imperial = structuredClone(base);
     imperial.emperor = { favor: 18, trust: 10 };
+    imperial.history.push("duck_admit");
     expect(evaluatePromotion(imperial, "chapter-5")).toMatchObject({
       status: "promoted",
       to: "嫔",
       route: "帝心",
     });
+    // 晋位时 reason 是一句具体的话，不是数字。
+    expect(evaluatePromotion(imperial, "chapter-5").reason).toMatch(
+      /御前|判断|承担/,
+    );
 
+    // 清议：数值 + 具名依据（恢复名册 = day2_restore_name）。
     const merit = structuredClone(base);
     merit.stats.名望 = 4;
     merit.stats.才学 = 5;
+    merit.history.push("day2_restore_name");
     expect(evaluatePromotion(merit, "chapter-5")).toMatchObject({
       status: "promoted",
       route: "清议",
     });
 
+    // 人脉：数值 + 具名依据（先救林栖梧 = day3_save_lin）。
     const network = structuredClone(base);
     network.relations.沈令仪 = 20;
     network.relations.顾明华 = 0;
     network.relations.高福安 = -5;
+    network.history.push("day3_save_lin");
     expect(evaluatePromotion(network, "chapter-5")).toMatchObject({
       status: "promoted",
       route: "人脉",
     });
+
+    // held 时 criteria 里有 basisHint（具名依据的提示，不是纯数字）。
+    const heldState = structuredClone(base);
+    heldState.emperor = { favor: 18, trust: 10 };
+    const held = evaluatePromotion(heldState, "chapter-5");
+    expect(held.status).toBe("held");
+    const imperialCrit = held.criteria.find((c) => c.route === "帝心");
+    expect(imperialCrit?.basisHint).toBeTruthy();
   });
 
   it("carries the chapter seven hunt consequence into chapter eight", () => {

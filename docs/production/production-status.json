@@ -4,7 +4,12 @@
   "project": "天机宫阙",
   "releaseTarget": "第一季商业化 iOS 纵向切片",
   "milestones": [
-    { "id": "M01", "title": "可玩纵向切片", "status": "DONE", "progress": 100 },
+    {
+      "id": "M01",
+      "title": "可玩纵向切片",
+      "status": "DONE",
+      "progress": 100
+    },
     {
       "id": "M02",
       "title": "制作治理与质量门槛",
@@ -37,7 +42,10 @@
       "priority": "P0",
       "status": "DONE",
       "complexity": "M",
-      "dependencies": ["E08", "E11"],
+      "dependencies": [
+        "E08",
+        "E11"
+      ],
       "owner": "Gameplay / Codex"
     },
     {
@@ -46,7 +54,10 @@
       "priority": "P0",
       "status": "DONE",
       "complexity": "L",
-      "dependencies": ["E08", "晋位路线"],
+      "dependencies": [
+        "E08",
+        "晋位路线"
+      ],
       "owner": "Gameplay + Narrative"
     },
     {
@@ -55,7 +66,10 @@
       "priority": "P1",
       "status": "DONE",
       "complexity": "XL",
-      "dependencies": ["F02", "角色圣经"],
+      "dependencies": [
+        "F02",
+        "角色圣经"
+      ],
       "owner": "Narrative"
     },
     {
@@ -64,17 +78,24 @@
       "priority": "P0",
       "status": "PLANNED",
       "complexity": "XL",
-      "dependencies": ["F01", "E08"],
+      "dependencies": [
+        "F01",
+        "E08"
+      ],
       "owner": "Narrative + Gameplay"
     },
     {
       "id": "E03",
       "title": "天机阁主「盲眼史官」",
       "priority": "P0",
-      "status": "PLANNED",
+      "status": "DONE",
       "complexity": "L",
-      "dependencies": ["E08", "E11"],
-      "owner": "Narrative + Gameplay"
+      "dependencies": [
+        "E08",
+        "E11",
+        "F01"
+      ],
+      "owner": "Narrative + Gameplay / Claude"
     },
     {
       "id": "E04",
@@ -82,7 +103,10 @@
       "priority": "P1",
       "status": "PLANNED",
       "complexity": "L",
-      "dependencies": ["E08", "E11"],
+      "dependencies": [
+        "E08",
+        "E11"
+      ],
       "owner": "Narrative"
     },
     {
@@ -91,7 +115,10 @@
       "priority": "P1",
       "status": "PLANNED",
       "complexity": "XL",
-      "dependencies": ["E11", "角色关系重量"],
+      "dependencies": [
+        "E11",
+        "角色关系重量"
+      ],
       "owner": "Narrative"
     },
     {
@@ -100,7 +127,10 @@
       "priority": "P1",
       "status": "PLANNED",
       "complexity": "L",
-      "dependencies": ["E03", "F01"],
+      "dependencies": [
+        "E03",
+        "F01"
+      ],
       "owner": "Narrative + Gameplay"
     },
     {
@@ -109,7 +139,10 @@
       "priority": "P0",
       "status": "DONE",
       "complexity": "XL",
-      "dependencies": ["E08", "种子真相"],
+      "dependencies": [
+        "E08",
+        "种子真相"
+      ],
       "owner": "Gameplay + Narrative"
     },
     {
@@ -118,7 +151,10 @@
       "priority": "P0",
       "status": "DONE",
       "complexity": "L",
-      "dependencies": ["现有证据标签", "现有结局"],
+      "dependencies": [
+        "现有证据标签",
+        "现有结局"
+      ],
       "owner": "Gameplay + Narrative"
     },
     {
@@ -127,7 +163,10 @@
       "priority": "P1",
       "status": "PLANNED",
       "complexity": "XL",
-      "dependencies": ["F01", "结局整合"],
+      "dependencies": [
+        "F01",
+        "结局整合"
+      ],
       "owner": "Narrative"
     },
     {
@@ -136,7 +175,10 @@
       "priority": "P2",
       "status": "PLANNED",
       "complexity": "M",
-      "dependencies": ["E03", "E06"],
+      "dependencies": [
+        "E03",
+        "E06"
+      ],
       "owner": "Narrative + Art"
     },
     {
@@ -145,7 +187,9 @@
       "priority": "P0",
       "status": "DONE",
       "complexity": "L",
-      "dependencies": ["E08"],
+      "dependencies": [
+        "E08"
+      ],
       "owner": "Narrative + Gameplay"
     }
   ],
@@ -226,6 +270,13 @@
         "status": "DONE",
         "owner": "Gameplay + Narrative + Art / Codex",
         "exitCondition": "三条互斥假消息、独立 seeded 泄漏链、观察与已知分层、错误问责后果及第九章原路线可达性全部通过审查。"
+      },
+      {
+        "id": "E03",
+        "title": "天机阁主「盲眼史官」",
+        "status": "DONE",
+        "owner": "Narrative + Gameplay / Claude",
+        "exitCondition": "谶语只产出 belief/hint 且 signpost 措辞与真相无关；价目取自玩家真实私密记忆并确定性选定；无私事者无法交易；三次交易均早于兑现章节；秘录册形成以本人经手为唯一知情渠道的延迟旧账。"
       }
     ],
     "notThisSprint": [
@@ -291,15 +342,40 @@
     "status": "PASS",
     "summary": "106 项单元测试、3 项 SSR 与生产构建通过；E07 的种子独立性、三链互斥、错看不泄密、双来源确认、错误问责续行和谨慎路线由自动测试守护。",
     "checks": [
-      { "name": "Formatting", "status": "PASS" },
-      { "name": "TypeScript", "status": "PASS" },
-      { "name": "Lint", "status": "PASS" },
-      { "name": "Unit tests", "status": "PASS", "detail": "106 passed" },
-      { "name": "Production build", "status": "PASS" },
-      { "name": "Dashboard release exclusion", "status": "PASS" }
+      {
+        "name": "Formatting",
+        "status": "PASS"
+      },
+      {
+        "name": "TypeScript",
+        "status": "PASS"
+      },
+      {
+        "name": "Lint",
+        "status": "PASS"
+      },
+      {
+        "name": "Unit tests",
+        "status": "PASS",
+        "detail": "106 passed"
+      },
+      {
+        "name": "Production build",
+        "status": "PASS"
+      },
+      {
+        "name": "Dashboard release exclusion",
+        "status": "PASS"
+      }
     ]
   },
   "latestCompleted": [
+    {
+      "id": "E03",
+      "title": "天机阁主「盲眼史官」",
+      "date": "2026-08-08",
+      "summary": "天机阁成为隐藏真相的唯一玩家界面：谶语只给观察窗口不给结论，代价是玩家真实做过且无人知晓的往事；交出的秘密进入秘录册，成为第十一章一笔以本人经手为知情渠道的延迟旧账。全程走明路的玩家买不到谶语。"
+    },
     {
       "id": "E07",
       "title": "宫中内奸调查",
@@ -374,10 +450,10 @@
     }
   ],
   "nextRecommendedTask": {
-    "id": "E05",
-    "title": "必要的背叛",
-    "why": "调查、文书责任、延迟后果与角色关系重量已经具备，可以开始设计一次出于可理解动机、且真正改变可玩路线的背叛。",
-    "firstStep": "先定义背叛者的承诺、无法同时保全的对象、可见预兆与三种玩家应对，再选择一个既有章节接入最小切片。",
-    "acceptance": "背叛必须由角色动机和玩家历史共同成立，不是随机反转；预兆可回看，损失不可被单一最优选择完全规避，且后续路线仍可玩。"
+    "id": "F03",
+    "title": "晋位判定迁移到合法性依据",
+    "why": "F01 处世留痕与晋位数值门槛目前互不相通，玩家全程建立的行事方式不影响能走多远；F02 已验证「依据绑定职位与来源」的模型可用，E03 又让私密记忆成为可消费资源，迁移时机成熟。",
+    "firstStep": "把第五、七、九章的三条晋位路线各改写为一条具名依据：帝心须引用皇帝公开采信的具体一事，清议须有两件正式入档且无异议的往事，人脉须有两名具名角色愿为某次具体行为署名。数值降为必要条件而非充分条件。",
+    "acceptance": "晋位提示显示具体事由而非纯数值；五种处世手段仍可并存且无优劣排序；旧存档不因迁移丢失既有位分；第十二章凤位不再存在纯数值路线。"
   }
 }
