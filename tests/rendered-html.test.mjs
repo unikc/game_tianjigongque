@@ -37,3 +37,10 @@ test("ships a usable no-script document structure", async () => {
   assert.match(html, /aria-label="承熙御玺"/i);
   assert.doesNotMatch(html, /react-loading-skeleton|sites-skeleton/i);
 });
+
+test("applies the saved or system appearance before hydration", async () => {
+  const html = await (await render()).text();
+  assert.match(html, /tianji-palace-theme/);
+  assert.match(html, /prefers-color-scheme: dark/);
+  assert.match(html, /dataset\.gameTheme/);
+});

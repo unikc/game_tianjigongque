@@ -93,21 +93,19 @@ export function RelationshipCard({
   const direction =
     value > 10 ? "positive" : value < -10 ? "negative" : "neutral";
   const status =
-    value >= 86
-      ? "生死之交"
-      : value >= 61
-        ? "同盟"
-        : value >= 31
-          ? "亲近"
-          : value >= 11
-            ? "熟悉"
-            : value <= -61
-              ? "死敌"
-              : value <= -31
-                ? "敌视"
-                : value <= -11
-                  ? "疏远"
-                  : "初识";
+    value >= 61
+      ? "深交"
+      : value >= 31
+        ? "亲近"
+        : value >= 11
+          ? "熟识"
+          : value <= -61
+            ? "敌对"
+            : value <= -31
+              ? "戒备"
+              : value <= -11
+                ? "疏远"
+                : "初识";
   return (
     <div className="relation" data-direction={direction}>
       <div className="relation-heading">

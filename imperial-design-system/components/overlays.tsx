@@ -90,15 +90,87 @@ export function Toast({ children }: { children: ReactNode }) {
 export function BottomSheet({
   title,
   children,
+  onClose,
 }: {
   title: string;
   children: ReactNode;
+  onClose: () => void;
 }) {
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const sheetRef = useRef<HTMLElement>(null);
+  const backdropRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    const sheet = sheetRef.current;
+    const backdrop = backdropRef.current;
+    const siblings = backdrop?.parentElement
+      ? Array.from(backdrop.parentElement.children).filter(
+          (element): element is HTMLElement =>
+            element instanceof HTMLElement && element !== backdrop,
+        )
+      : [];
+
+    document.body.style.overflow = "hidden";
+    siblings.forEach((element) => {
+      element.inert = true;
+    });
+    closeRef.current?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab" || !sheet) return;
+
+      const focusable = Array.from(
+        sheet.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previousOverflow;
+      siblings.forEach((element) => {
+        element.inert = false;
+      });
+      previousFocus?.focus();
+    };
+  }, [onClose]);
   return (
-    <section className="ids-bottom-sheet" aria-label={title}>
-      <h2>{title}</h2>
-      {children}
-    </section>
+    <div
+      ref={backdropRef}
+      className="ids-sheet-backdrop"
+      onMouseDown={(event) => event.target === event.currentTarget && onClose()}
+    >
+      <section
+        ref={sheetRef}
+        className="ids-bottom-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="ids-sheet-title"
+      >
+        <header>
+          <h2 id="ids-sheet-title">{title}</h2>
+          <button ref={closeRef} onClick={onClose} aria-label="关闭设置">
+            ×
+          </button>
+        </header>
+        {children}
+      </section>
+    </div>
   );
 }
 export const Drawer = BottomSheet;

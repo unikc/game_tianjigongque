@@ -12,6 +12,7 @@ import type {
   StatKey,
   ZodiacId,
 } from "../types";
+import { relationshipProfiles, relationKeys } from "../relationships";
 export const SAVE_KEY = "tianji-palace-save";
 
 /**
@@ -60,6 +61,20 @@ export const safeStorage = {
   },
 };
 export const ACTION_POINT_CAP = 5;
+export type PalaceAction =
+  | "study"
+  | "attend"
+  | "confide"
+  | "network"
+  | "rest"
+  | "raiseFunds";
+
+export function resourceStage(value: number) {
+  if (value >= 7) return { label: "充沛", tone: "secure" } as const;
+  if (value >= 4) return { label: "平稳", tone: "steady" } as const;
+  if (value >= 2) return { label: "吃紧", tone: "strained" } as const;
+  return { label: "危急", tone: "critical" } as const;
+}
 export const rankOrder: Rank[] = [
   "答应",
   "常在",
@@ -70,16 +85,12 @@ export const rankOrder: Rank[] = [
   "皇贵妃",
   "皇后",
 ];
-const relations: Record<RelationKey, number> = {
-  沈令仪: 0,
-  顾明华: 0,
-  高福安: 0,
-};
-const relationshipStrain: Record<RelationKey, number> = {
-  沈令仪: 0,
-  顾明华: 0,
-  高福安: 0,
-};
+const relations = Object.fromEntries(
+  relationKeys.map((key) => [key, relationshipProfiles[key].initialValue]),
+) as Record<RelationKey, number>;
+const relationshipStrain = Object.fromEntries(
+  relationKeys.map((key) => [key, 0]),
+) as Record<RelationKey, number>;
 const coreStats: StatKey[] = ["才学", "谋略", "胆识", "礼仪", "人情"];
 export function growthCost(value: number) {
   if (value < 4) return 1;
@@ -102,13 +113,32 @@ export function courtAttention(state: GameState) {
   const publicVisits = state.tags.filter((tag) =>
     tag.startsWith(`action_networked_chapter_${chapter}_`),
   ).length;
+  const raisedFunds = state.tags.includes(
+    `action_raised_funds_chapter_${chapter}`,
+  );
   return Math.min(
     100,
     rankAttention(state.rank) +
       (attended ? 3 : 0) +
       (confided ? 1 : 0) +
-      publicVisits * 2,
+      publicVisits * 2 +
+      (raisedFunds ? 2 : 0),
   );
+}
+
+export function isRelationshipAvailable(state: GameState, key: RelationKey) {
+  if (relationshipProfiles[key].knownAfter > state.completedChapters.length) {
+    return false;
+  }
+  if (key === "林栖梧" && state.tags.includes("day3_lin_dead")) return false;
+  if (
+    key === "高福安" &&
+    (state.tags.includes("ch9_evidence_saved") ||
+      state.tags.includes("ch9_arsonist_caught"))
+  ) {
+    return false;
+  }
+  return true;
 }
 export function createGame(
   name: string,
@@ -124,7 +154,7 @@ export function createGame(
     ([k, v]) => (stats[k as StatKey] += v ?? 0),
   );
   return {
-    version: 7,
+    version: 8,
     name: name.trim() || "陆清和",
     origin,
     zodiac,
@@ -143,6 +173,7 @@ export function createGame(
     relationshipStrain: { ...relationshipStrain },
     resolvedSideStories: [],
     chaptersWithoutEmperor: 0,
+    resourcePressure: { exhaustion: 0, arrears: 0 },
     rank: undefined,
   };
 }
@@ -581,7 +612,20 @@ export function completeChapter(state: GameState, chapterId: ChapterId) {
   const chaptersWithoutEmperor = sawEmperor
     ? 0
     : state.chaptersWithoutEmperor + 1;
-  const stipend = [1, 1, 2, 2, 3, 4, 5, 6][rankOrder.indexOf(rank)] ?? 1;
+  const rankIndex = rankOrder.indexOf(rank);
+  const stipend = [1, 1, 2, 2, 3, 4, 5, 6][rankIndex] ?? 1;
+  const upkeep = [0, 0, 1, 1, 1, 2, 2, 3][rankIndex] ?? 0;
+  const nextMoney = Math.min(10, state.stats.银钱 + stipend - upkeep);
+  const resourcePressure = {
+    exhaustion:
+      state.stats.体力 <= 2
+        ? Math.min(3, state.resourcePressure.exhaustion + 1)
+        : Math.max(0, state.resourcePressure.exhaustion - 1),
+    arrears:
+      nextMoney <= 1
+        ? Math.min(3, state.resourcePressure.arrears + 1)
+        : Math.max(0, state.resourcePressure.arrears - 1),
+  };
   return {
     ...state,
     completedChapters: [...state.completedChapters, chapterId],
@@ -593,7 +637,8 @@ export function completeChapter(state: GameState, chapterId: ChapterId) {
     growthPoints: state.growthPoints + grant.growthPoints,
     stats: {
       ...state.stats,
-      银钱: Math.min(10, state.stats.银钱 + stipend),
+      体力: Math.min(10, state.stats.体力 + 1),
+      银钱: nextMoney,
     },
     actionPoints: Math.min(ACTION_POINT_CAP, state.actionPoints + 2),
     relationshipStrain: nextStrain,
@@ -605,6 +650,7 @@ export function completeChapter(state: GameState, chapterId: ChapterId) {
       ),
     },
     chaptersWithoutEmperor,
+    resourcePressure,
     rank,
   };
 }
@@ -672,7 +718,7 @@ export function residenceFor(state: GameState) {
 }
 export function performPalaceAction(
   state: GameState,
-  action: "study" | "attend" | "confide" | "network" | "rest",
+  action: PalaceAction,
 ): GameState {
   if (state.actionPoints < 1) return state;
   const residence = residenceFor(state);
@@ -682,6 +728,11 @@ export function performPalaceAction(
   )
     return state;
   if (action === "network" && state.stats.银钱 < 1) return state;
+  if (
+    action === "raiseFunds" &&
+    (state.stats.体力 < 1 || state.stats.银钱 >= 9)
+  )
+    return state;
   if (action === "rest" && state.stats.体力 >= 10) return state;
   if (action === "study") {
     const studyTag = `action_studied_chapter_${state.completedChapters.length + 1}`;
@@ -743,8 +794,15 @@ export function performPalaceAction(
     };
   }
   if (action === "network") {
-    const target = (
+    const relations = (
       Object.entries(state.relations) as [RelationKey, number][]
+    ).filter(([name]) => isRelationshipAvailable(state, name));
+    if (!relations.length) return state;
+    const eligibleRelations = state.tags.includes("debt:高福安")
+      ? relations.filter(([name]) => name !== "高福安")
+      : relations;
+    const target = (
+      eligibleRelations.length ? eligibleRelations : relations
     ).sort((a, b) => a[1] - b[1])[0][0];
     return {
       ...state,
@@ -766,6 +824,31 @@ export function performPalaceAction(
       ],
     };
   }
+  if (action === "raiseFunds") {
+    const fundsTag = `action_raised_funds_chapter_${state.completedChapters.length + 1}`;
+    if (state.tags.includes(fundsTag)) return state;
+    return {
+      ...state,
+      actionPoints: state.actionPoints - 1,
+      stats: {
+        ...state.stats,
+        体力: state.stats.体力 - 1,
+        银钱: Math.min(10, state.stats.银钱 + 2),
+      },
+      relations: {
+        ...state.relations,
+        高福安: Math.max(-100, state.relations.高福安 - 10),
+      },
+      tags: [
+        ...new Set([
+          ...state.tags,
+          "action_raised_funds",
+          "debt:高福安",
+          fundsTag,
+        ]),
+      ],
+    };
+  }
   return {
     ...state,
     actionPoints: state.actionPoints - 1,
@@ -773,7 +856,9 @@ export function performPalaceAction(
       ...state.stats,
       体力: Math.min(
         10,
-        state.stats.体力 + 1 + (residence.id === "jinghe" ? 1 : 0),
+        state.stats.体力 +
+          (state.stats.体力 <= 2 ? 3 : 2) +
+          (residence.id === "jinghe" ? 1 : 0),
       ),
     },
     tags: [...new Set([...state.tags, "action_rested"])],
@@ -902,7 +987,7 @@ export function deserialize(raw: string): GameState | null {
     return {
       ...fresh,
       ...p,
-      version: 7,
+      version: 8,
       stats: Object.fromEntries(
         (Object.keys(fresh.stats) as StatKey[]).map((stat) => {
           const saved = p.stats?.[stat];
@@ -979,6 +1064,19 @@ export function deserialize(raw: string): GameState | null {
         typeof p.chaptersWithoutEmperor === "number"
           ? Math.max(0, p.chaptersWithoutEmperor)
           : 0,
+      resourcePressure: {
+        exhaustion:
+          typeof p.resourcePressure?.exhaustion === "number"
+            ? Math.max(
+                0,
+                Math.min(3, Math.floor(p.resourcePressure.exhaustion)),
+              )
+            : 0,
+        arrears:
+          typeof p.resourcePressure?.arrears === "number"
+            ? Math.max(0, Math.min(3, Math.floor(p.resourcePressure.arrears)))
+            : 0,
+      },
     };
   } catch {
     return null;

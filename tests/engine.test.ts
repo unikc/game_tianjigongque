@@ -25,7 +25,7 @@ describe("game engine", () => {
       才学: 3,
       谋略: 3,
       人情: 2,
-      体力: 1,
+      体力: 3,
     });
     expect(createGame("乙", "merchant", 7, "monkey").stats).toMatchObject({
       才学: 2,
@@ -36,7 +36,7 @@ describe("game engine", () => {
     });
     expect(createGame("丙", "general", 7, "ox").stats).toMatchObject({
       胆识: 3,
-      体力: 4,
+      体力: 6,
       礼仪: 1,
     });
   });
@@ -83,7 +83,8 @@ describe("game engine", () => {
         seed: 2,
       }),
     );
-    expect(migrated?.version).toBe(7);
+    expect(migrated?.version).toBe(8);
+    expect(migrated?.resourcePressure).toEqual({ exhaustion: 0, arrears: 0 });
     expect(migrated?.zodiac).toBe("rabbit");
     expect(migrated?.stats.银钱).toBe(4);
     expect(migrated?.relations.高福安).toBe(0);
@@ -203,7 +204,7 @@ describe("game engine", () => {
     const sunny = createGame("景和", "scholar", 14);
     sunny.rank = "嫔";
     sunny.stats.体力 = 3;
-    expect(performPalaceAction(sunny, "rest").stats.体力).toBe(5);
+    expect(performPalaceAction(sunny, "rest").stats.体力).toBe(6);
 
     const nearEmperor = createGame("昭阳", "scholar", 15);
     nearEmperor.rank = "贵妃";
@@ -243,6 +244,42 @@ describe("game engine", () => {
     const afterSilver = completeChapter(beforeSilver, "chapter-1");
     expect(afterSilver.stats.银钱).toBeGreaterThan(beforeSilver.stats.银钱);
   });
+  it("turns resource scarcity into recoverable pressure and playable events", () => {
+    let state = createGame("困局巡检", "scholar", 20);
+    expect(state.stats.体力).toBe(3);
+
+    state.stats.体力 = 1;
+    state.stats.银钱 = 0;
+    const rested = performPalaceAction(state, "rest");
+    expect(rested.stats.体力).toBe(4);
+
+    const raised = performPalaceAction(
+      { ...state, actionPoints: 3 },
+      "raiseFunds",
+    );
+    expect(raised.stats.银钱).toBe(2);
+    expect(raised.stats.体力).toBe(0);
+    expect(raised.relations.高福安).toBe(-10);
+    expect(courtAttention(raised)).toBe(2);
+    expect(raised.tags).toContain("debt:高福安");
+    expect(performPalaceAction(raised, "raiseFunds")).toBe(raised);
+
+    const flush = createGame("银钱巡检", "merchant", 21);
+    flush.stats.银钱 = 9;
+    expect(performPalaceAction(flush, "raiseFunds")).toBe(flush);
+
+    state = completeChapter(state, "chapter-1");
+    state.stats.体力 = 1;
+    state.stats.银钱 = 0;
+    state = completeChapter(state, "chapter-2");
+    expect(state.resourcePressure).toEqual({ exhaustion: 2, arrears: 2 });
+    expect(availableSideStories(state).map((story) => story.id)).toEqual(
+      expect.arrayContaining([
+        "exhaustion-physician-order",
+        "arrears-red-mark",
+      ]),
+    );
+  });
   it("uses escalating training costs and reserves level ten for story breakthroughs", () => {
     expect([3, 4, 6, 8, 9].map(growthCost)).toEqual([1, 2, 3, 4, Infinity]);
     const state = createGame("清和", "scholar", 10);
@@ -253,9 +290,11 @@ describe("game engine", () => {
   it("turns sustained hostility and relationship milestones into playable events", () => {
     let state = createGame("清和", "scholar", 10);
     state.relations.顾明华 = -40;
-    state = completeChapter(state, "chapter-1");
-    state = completeChapter(state, "chapter-2");
-    expect(state.relationshipStrain.顾明华).toBe(2);
+    state.tags.push("day3_gu_accused");
+    for (const chapter of [1, 2, 3, 4, 5] as const) {
+      state = completeChapter(state, `chapter-${chapter}`);
+    }
+    expect(state.relationshipStrain.顾明华).toBeGreaterThanOrEqual(2);
     expect(availableSideStories(state).map((story) => story.id)).toContain(
       "gu-long-grudge",
     );

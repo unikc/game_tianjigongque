@@ -30,9 +30,13 @@ export type ArsonPatron =
   /** 太后母族：借宗室之名灭口，把水搅浑。 */
   | "dowager";
 
+/** 火场消息从哪一段文书链泄漏；它只证明环节，不证明某个人通敌。 */
+export type LeakLink = "review-copy" | "courier-route" | "recipient-household";
+
 export type HiddenTruths = {
   wenLoyalty: WenLoyalty;
   arsonPatron: ArsonPatron;
+  leakLink: LeakLink;
 };
 
 /**
@@ -43,9 +47,15 @@ export type HiddenTruths = {
  */
 export function deriveTruths(seed: number): HiddenTruths {
   const s = Math.abs(Math.floor(seed)) || 1;
+  // A separate integer mix keeps the three-way leak truth from collapsing
+  // onto either of the older two binary truths.
+  const leakMix = Math.imul((s ^ 0x9e3779b9) >>> 0, 1597334677) >>> 0;
   return {
     wenLoyalty: (s * 2654435761) % 3 === 0 ? "compromised" : "honest",
     arsonPatron: (s * 40503) % 2 === 0 ? "dowager" : "royal",
+    leakLink: (
+      ["review-copy", "courier-route", "recipient-household"] as const
+    )[leakMix % 3],
   };
 }
 
@@ -53,6 +63,7 @@ export function deriveTruths(seed: number): HiddenTruths {
 export const truthSummaries: {
   wenLoyalty: Record<WenLoyalty, string>;
   arsonPatron: Record<ArsonPatron, string>;
+  leakLink: Record<LeakLink, string>;
 } = {
   wenLoyalty: {
     honest: "温疏雨说的是真话：她改脉案，是为了让惠嫔活过那个冬天。",
@@ -62,5 +73,11 @@ export const truthSummaries: {
   arsonPatron: {
     royal: "十二宫的火是宗室放的，与春猎那支箭同源。",
     dowager: "十二宫的火是太后母族放的，借宗室之名灭口，把水搅浑。",
+  },
+  leakLink: {
+    "review-copy": "假消息从退回复核笺的副本链流出；这不等于谢明微本人通敌。",
+    "courier-route":
+      "假消息从宫门内递路线流出；路牌与班次比封内文字更早被人看见。",
+    "recipient-household": "假消息从长春宫收件链流出；这只证明近侍环节失守。",
   },
 };

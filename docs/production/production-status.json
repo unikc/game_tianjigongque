@@ -1,0 +1,383 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-08-08",
+  "project": "天机宫阙",
+  "releaseTarget": "第一季商业化 iOS 纵向切片",
+  "milestones": [
+    { "id": "M01", "title": "可玩纵向切片", "status": "DONE", "progress": 100 },
+    {
+      "id": "M02",
+      "title": "制作治理与质量门槛",
+      "status": "DONE",
+      "progress": 100
+    },
+    {
+      "id": "M03",
+      "title": "叙事后果基础",
+      "status": "DONE",
+      "progress": 100
+    },
+    {
+      "id": "M04",
+      "title": "新增角色与互动弧",
+      "status": "IN PROGRESS",
+      "progress": 50
+    },
+    {
+      "id": "M05",
+      "title": "iOS 商业化准备",
+      "status": "DONE",
+      "progress": 12
+    }
+  ],
+  "epics": [
+    {
+      "id": "F01",
+      "title": "叙事记忆与策略画像基础",
+      "priority": "P0",
+      "status": "DONE",
+      "complexity": "M",
+      "dependencies": ["E08", "E11"],
+      "owner": "Gameplay / Codex"
+    },
+    {
+      "id": "F02",
+      "title": "政治合法性与体面台阶",
+      "priority": "P0",
+      "status": "DONE",
+      "complexity": "L",
+      "dependencies": ["E08", "晋位路线"],
+      "owner": "Gameplay + Narrative"
+    },
+    {
+      "id": "E01",
+      "title": "太后·崔氏「最后一道墙」",
+      "priority": "P1",
+      "status": "DONE",
+      "complexity": "XL",
+      "dependencies": ["F02", "角色圣经"],
+      "owner": "Narrative"
+    },
+    {
+      "id": "E02",
+      "title": "谢明微「镜中敌手」",
+      "priority": "P0",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "dependencies": ["F01", "E08"],
+      "owner": "Narrative + Gameplay"
+    },
+    {
+      "id": "E03",
+      "title": "天机阁主「盲眼史官」",
+      "priority": "P0",
+      "status": "PLANNED",
+      "complexity": "L",
+      "dependencies": ["E08", "E11"],
+      "owner": "Narrative + Gameplay"
+    },
+    {
+      "id": "E04",
+      "title": "前朝废后「已经赢过的人」",
+      "priority": "P1",
+      "status": "PLANNED",
+      "complexity": "L",
+      "dependencies": ["E08", "E11"],
+      "owner": "Narrative"
+    },
+    {
+      "id": "E05",
+      "title": "必要的背叛",
+      "priority": "P1",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "dependencies": ["E11", "角色关系重量"],
+      "owner": "Narrative"
+    },
+    {
+      "id": "E06",
+      "title": "自证预言",
+      "priority": "P1",
+      "status": "PLANNED",
+      "complexity": "L",
+      "dependencies": ["E03", "F01"],
+      "owner": "Narrative + Gameplay"
+    },
+    {
+      "id": "E07",
+      "title": "宫中内奸调查",
+      "priority": "P0",
+      "status": "DONE",
+      "complexity": "XL",
+      "dependencies": ["E08", "种子真相"],
+      "owner": "Gameplay + Narrative"
+    },
+    {
+      "id": "E08",
+      "title": "文书权力与替罪弧",
+      "priority": "P0",
+      "status": "DONE",
+      "complexity": "L",
+      "dependencies": ["现有证据标签", "现有结局"],
+      "owner": "Gameplay + Narrative"
+    },
+    {
+      "id": "E09",
+      "title": "胜利与道德转型",
+      "priority": "P1",
+      "status": "PLANNED",
+      "complexity": "XL",
+      "dependencies": ["F01", "结局整合"],
+      "owner": "Narrative"
+    },
+    {
+      "id": "E10",
+      "title": "十二章章首谶诗",
+      "priority": "P2",
+      "status": "PLANNED",
+      "complexity": "M",
+      "dependencies": ["E03", "E06"],
+      "owner": "Narrative + Art"
+    },
+    {
+      "id": "E11",
+      "title": "延迟复仇",
+      "priority": "P0",
+      "status": "DONE",
+      "complexity": "L",
+      "dependencies": ["E08"],
+      "owner": "Narrative + Gameplay"
+    }
+  ],
+  "developmentOrder": [
+    "E08 文书生命周期与来源链",
+    "E11 延迟后果模型",
+    "F01 叙事记忆与策略画像",
+    "F02 政治合法性",
+    "E01/E02 角色基础",
+    "E07/E05 调查与背叛",
+    "E04 前朝废后",
+    "E03/E06/E10 天机与预言",
+    "E09 结局道德转型"
+  ],
+  "currentSprint": {
+    "period": "2026-08-08 — 2026-08-15",
+    "goal": "完成角色基础、政治合法性与第九章宫中泄漏调查，并保持知识边界与错误路线可玩。",
+    "workItems": [
+      {
+        "id": "NIGHT01",
+        "title": "全游戏夜间视觉与可访问性修复",
+        "status": "DONE",
+        "owner": "Art / Frontend / Codex",
+        "exitCondition": "标题、建档、剧情、结算、五个主页分区与弹层均使用成对语义材料；关键文字对比达到 WCAG AA。"
+      },
+      {
+        "id": "SET01",
+        "title": "外观与语言设置页",
+        "status": "DONE",
+        "owner": "Product / Art / Codex",
+        "exitCondition": "日间、夜间与系统跟随可用并持久化；未完成语言明确不可操作；320px 底栏无溢出。"
+      },
+      {
+        "id": "PD01",
+        "title": "开发版 Production Dashboard",
+        "status": "DONE",
+        "owner": "Producer / Codex",
+        "exitCondition": "单一数据源生成 Dashboard、roadmap 与 current sprint；发布构建不包含 Dashboard。"
+      },
+      {
+        "id": "E11",
+        "title": "延迟复仇后果模型",
+        "status": "DONE",
+        "owner": "Narrative + Gameplay",
+        "exitCondition": "旧因、知情渠道、等待时机、目标与应对被定义并通过叙事审查。"
+      },
+      {
+        "id": "F01",
+        "title": "叙事记忆与策略画像基础",
+        "status": "DONE",
+        "owner": "Gameplay / Codex",
+        "exitCondition": "五种可并存处世手段由稳定选择记忆纯派生，具备观察边界、来源链、一次归因与可解释玩家反馈。"
+      },
+      {
+        "id": "F02",
+        "title": "政治合法性与体面台阶",
+        "status": "DONE",
+        "owner": "Gameplay + Narrative / Codex",
+        "exitCondition": "第十章摄政署名由三套具名依据通过；证据、帝宠与主张本身均不能自动授权；依据不足时有命名质询和三类体面退路。"
+      },
+      {
+        "id": "E01",
+        "title": "太后·崔氏「最后一道墙」角色基础",
+        "status": "DONE",
+        "owner": "Narrative + Art + Gameplay / Codex",
+        "exitCondition": "角色圣经、正式立绘、公开知识边界、第五／六章记忆回声、第十章三类承认与第十一章限期回收均通过审查。"
+      },
+      {
+        "id": "E02",
+        "title": "谢明微「镜中敌手」角色基础",
+        "status": "DONE",
+        "owner": "Narrative + Art + Gameplay / Codex",
+        "exitCondition": "角色圣经、正式立绘、有限观察模型、第八章自适应复核与第十章权力边界回响均通过审查。"
+      },
+      {
+        "id": "E07",
+        "title": "宫中内奸调查",
+        "status": "DONE",
+        "owner": "Gameplay + Narrative + Art / Codex",
+        "exitCondition": "三条互斥假消息、独立 seeded 泄漏链、观察与已知分层、错误问责后果及第九章原路线可达性全部通过审查。"
+      }
+    ],
+    "notThisSprint": [
+      "不新增天机阁主或前朝废后的正式场景。",
+      "不写章首谶诗，不新增结局。",
+      "不在延迟后果模型稳定前扩展通用记忆系统。"
+    ],
+    "gates": [
+      "Dashboard 只读且无状态修改入口。",
+      "roadmap.md 与 current-sprint.md 必须由结构化数据生成。",
+      "生产构建不输出 /production 页面或 Dashboard 资源。",
+      "Narrative、Art、Gameplay 与 QA 状态必须可见。"
+    ]
+  },
+  "issues": [
+    {
+      "id": "P0-01",
+      "priority": "P0",
+      "status": "RESOLVED",
+      "title": "空印拓样曾被误判为控制原件",
+      "owner": "Narrative + Gameplay",
+      "blocks": []
+    },
+    {
+      "id": "P1-01",
+      "priority": "P1",
+      "status": "RESOLVED",
+      "title": "延迟复仇尚无统一后果模型",
+      "owner": "Narrative + Gameplay",
+      "blocks": []
+    },
+    {
+      "id": "P1-02",
+      "priority": "P1",
+      "status": "RESOLVED",
+      "title": "政治合法性尚未从证据和晋位中独立建模",
+      "owner": "Gameplay + Narrative",
+      "blocks": []
+    }
+  ],
+  "blockedItems": [],
+  "reviews": {
+    "narrative": {
+      "status": "PASS",
+      "reviewer": "Imperial Narrative Director",
+      "detail": "E07 最终复审通过：三条制度链与种子真相独立；玩家只看见所监看渠道，独立记录与外部回流共同成立才升级为已知；误判与暂不归责均可继续。",
+      "updatedAt": "2026-08-08"
+    },
+    "art": {
+      "status": "PASS",
+      "reviewer": "Imperial Art Director",
+      "detail": "E07 最终复审通过：三张薄札即三项触控选择，回札不泄露真实路径；320–430px 密度、宫廷文书材质、日夜对比、焦点与减少动效均通过。",
+      "updatedAt": "2026-08-08"
+    },
+    "gameplay": {
+      "status": "PASS",
+      "reviewer": "Gameplay / Systems",
+      "detail": "leakLink 由种子独立纯派生；三类观察、belief/known 分层、三种问责和谨慎轮换均留下非数值后果，且全部回到原第九章路线。",
+      "updatedAt": "2026-08-08"
+    }
+  },
+  "qa": {
+    "status": "PASS",
+    "summary": "106 项单元测试、3 项 SSR 与生产构建通过；E07 的种子独立性、三链互斥、错看不泄密、双来源确认、错误问责续行和谨慎路线由自动测试守护。",
+    "checks": [
+      { "name": "Formatting", "status": "PASS" },
+      { "name": "TypeScript", "status": "PASS" },
+      { "name": "Lint", "status": "PASS" },
+      { "name": "Unit tests", "status": "PASS", "detail": "106 passed" },
+      { "name": "Production build", "status": "PASS" },
+      { "name": "Dashboard release exclusion", "status": "PASS" }
+    ]
+  },
+  "latestCompleted": [
+    {
+      "id": "E07",
+      "title": "宫中内奸调查",
+      "date": "2026-08-08",
+      "summary": "第九章新增三札分路与风声回返：复核、内递、收件三链由独立种子决定，玩家需用行动痕迹和第二来源推断，错误问责仍可继续。"
+    },
+    {
+      "id": "E02",
+      "title": "谢明微「镜中敌手」角色基础",
+      "date": "2026-08-08",
+      "summary": "新增司籍复核女史、正式立绘与互认关系谱；第八章会根据合法可见的旧记录改变复核追问，并在第十章主动承认其权力边界。"
+    },
+    {
+      "id": "E01",
+      "title": "太后·崔氏「最后一道墙」角色基础",
+      "date": "2026-08-08",
+      "summary": "新增正式角色立绘与责任关系谱；第五、六章公开选择会在第十章回响，三套合法摄政分别获承认，限期方案在第十一章兑现。"
+    },
+    {
+      "id": "F02",
+      "title": "政治合法性与体面台阶",
+      "date": "2026-08-08",
+      "summary": "以职位、受益人和来源绑定摄政依据；第十章支持三套独署方案，并为依据不足提供共署、联署与限期代行。"
+    },
+    {
+      "id": "F01",
+      "title": "叙事记忆与策略画像基础",
+      "date": "2026-08-08",
+      "summary": "以稳定选择记忆派生五种可并存处世手段，建立观察边界与来源链，并在行录新增无分数的处世录。"
+    },
+    {
+      "id": "E11",
+      "title": "延迟复仇后果模型",
+      "date": "2026-08-08",
+      "summary": "建立旧因—知情—等待—目标—应对的纯派生模型，完成顾明华与高福安可玩切片，并安全预埋裴照南后果。"
+    },
+    {
+      "id": "NIGHT01",
+      "title": "全游戏夜间主题审计与修复",
+      "date": "2026-08-08",
+      "summary": "建立日夜成对语义材料，修复标题、建档、剧情、结算、主页与弹层的浅底浅字和禁用态问题。"
+    },
+    {
+      "id": "SET01",
+      "title": "日夜外观与语言设置入口",
+      "date": "2026-08-08",
+      "summary": "新增设置主导航；日间、夜间与系统跟随即时生效并持久化，四种后续语言标记为制作中。"
+    },
+    {
+      "id": "PD01",
+      "title": "开发版 Production Dashboard",
+      "date": "2026-08-08",
+      "summary": "以单一 JSON 生成制作文档和只读 Dashboard，并通过发布排除验证。"
+    },
+    {
+      "id": "E08",
+      "title": "文书生命周期与足迹基础",
+      "date": "2026-08-08",
+      "summary": "统一七条现有文书链，拆分中心度与可归责行为，并保留种子真相边界。"
+    },
+    {
+      "id": "P00",
+      "title": "Imperial Producer 制作治理",
+      "date": "2026-08-08",
+      "summary": "建立 WIP、定义完成、路线图、Backlog、Sprint、风险与变更记录。"
+    },
+    {
+      "id": "RS01",
+      "title": "体力与银钱风险交换",
+      "date": "2026-08-08",
+      "summary": "资源不足转为困局与人情债，避免只做按钮门槛。"
+    }
+  ],
+  "nextRecommendedTask": {
+    "id": "E05",
+    "title": "必要的背叛",
+    "why": "调查、文书责任、延迟后果与角色关系重量已经具备，可以开始设计一次出于可理解动机、且真正改变可玩路线的背叛。",
+    "firstStep": "先定义背叛者的承诺、无法同时保全的对象、可见预兆与三种玩家应对，再选择一个既有章节接入最小切片。",
+    "acceptance": "背叛必须由角色动机和玩家历史共同成立，不是随机反转；预兆可回看，损失不可被单一最优选择完全规避，且后续路线仍可玩。"
+  }
+}

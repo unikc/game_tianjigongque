@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ChoiceButton,
+  HubPageHeader,
   ImperialSeal,
   ProgressBar,
   RelationshipCard,
@@ -173,6 +174,15 @@ export default function ImperialHandbook() {
                 <RelationshipCard label="高福安" value={0} />
               </div>
             </Specimen>
+            <Specimen title="Hub page header / 页首">
+              <HubPageHeader
+                eyebrow="成长与奖励"
+                title="所得珍藏"
+                titleId="ids-hub-header-example"
+                description="页首基线、说明与可选操作使用同一宫制。"
+                action={<button className="text-button">继续剧情</button>}
+              />
+            </Specimen>
           </div>
         </section>
 
@@ -279,6 +289,7 @@ export default function ImperialHandbook() {
                 <li>让道具拥有来源与代价</li>
                 <li>先验证最小手机尺寸</li>
                 <li>用稳定 ID 替换美术资产</li>
+                <li>Hub 根页面统一使用 HubPageHeader</li>
               </ul>
             </div>
             <div>
@@ -288,6 +299,7 @@ export default function ImperialHandbook() {
                 <li>用 SaaS 风玻璃卡片和霓虹渐变</li>
                 <li>为了塞进一屏而缩小触控目标</li>
                 <li>用颜色或动画承载唯一信息</li>
+                <li>用空工具栏、负边距或重复安全区制造对齐</li>
               </ul>
             </div>
           </div>

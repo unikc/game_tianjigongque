@@ -7,7 +7,15 @@ export type StatKey =
   | "体力"
   | "银钱"
   | "名望";
-export type RelationKey = "沈令仪" | "顾明华" | "高福安";
+export type RelationKey =
+  | "崔氏"
+  | "谢明微"
+  | "沈令仪"
+  | "顾明华"
+  | "高福安"
+  | "林栖梧"
+  | "温疏雨"
+  | "裴照南";
 export type OriginId = "scholar" | "merchant" | "general";
 export type ZodiacId = "rabbit" | "tiger" | "monkey" | "ox";
 export type Effect = {
@@ -37,7 +45,11 @@ export type Choice = {
    */
   requiresTruth?:
     | { key: "wenLoyalty"; value: "honest" | "compromised" }
-    | { key: "arsonPatron"; value: "royal" | "dowager" };
+    | { key: "arsonPatron"; value: "royal" | "dowager" }
+    | {
+        key: "leakLink";
+        value: "review-copy" | "courier-route" | "recipient-household";
+      };
 };
 export type PromotionRoute = "帝心" | "清议" | "人脉";
 export type PromotionDecision = {
@@ -51,7 +63,7 @@ export type Scene = {
   id: string;
   title: string;
   speaker?: string;
-  portrait?: "queen" | "zhaoyi" | "eunuch" | "duck";
+  portrait?: "dowager" | "xie" | "queen" | "zhaoyi" | "eunuch" | "duck";
   portraitLabel?: string;
   backgroundId?: string;
   chapterLabel?: string;
@@ -60,7 +72,7 @@ export type Scene = {
   choices: Choice[];
 };
 export type GameState = {
-  version: 7;
+  version: 8;
   name: string;
   origin: OriginId;
   zodiac: ZodiacId;
@@ -80,6 +92,7 @@ export type GameState = {
   relationshipStrain: Record<RelationKey, number>;
   resolvedSideStories: string[];
   chaptersWithoutEmperor: number;
+  resourcePressure: { exhaustion: number; arrears: number };
 };
 export type Rank =
   | "答应"
@@ -117,7 +130,7 @@ export type CharacterDefinition = {
   id: string;
   name: string;
   rank: string;
-  zodiac: "rabbit" | "tiger" | "rat" | "ox";
+  zodiac: "rabbit" | "tiger" | "rat" | "ox" | "snake";
   archetype: string;
   publicPersona: string;
   hiddenMotivation: string;

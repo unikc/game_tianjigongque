@@ -24,12 +24,15 @@ Build a tasteful, humorous, historically inspired Chinese palace narrative game.
 - Images must be local AVIF/WebP (or intentional CSS placeholders), include stable dimensions, and must not imitate identifiable actors or television characters.
 - Before finishing, run lint, typecheck, tests, formatting check, and production build.
 
-## Permanent specialist reviews
+## Permanent specialist reviews and production governance
 
-The repository includes two non-coding specialist agents:
+The repository includes three non-coding specialist agents:
 
 - `AGENTS/ImperialArtDirector.md` guards visual design, typography, illustration, character framing, motion, sound coordination, accessibility and presentation quality.
 - `AGENTS/ImperialNarrativeDirector.md` guards story architecture, character consistency, romance, political logic, choice quality, continuity, humor and long-term narrative memory.
+- `AGENTS/ImperialProducer.md` controls scope, dependencies, work-in-progress, production records and definition-of-done gates. It coordinates specialists but does not own their craft decisions or engineering implementation.
+
+For any new major feature or epic, consult the Imperial Producer first. Keep at most two major features `IN PROGRESS`, update `docs/production/`, and do not call an item `DONE` until the Producer definition of done is satisfied.
 
 For material changes to visual layout, typography, character presentation, art, animation, sound, onboarding, chapter presentation, result screens or major interaction patterns:
 

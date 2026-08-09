@@ -29,28 +29,33 @@ describe("隐藏真相", () => {
     }
   });
 
-  it("两个真相不被同一个 bit 决定（否则查清一件等于白送另一件）", () => {
+  it("三种真相彼此独立，十二种世界组合都能出现", () => {
     const pairs = new Set<string>();
-    for (let seed = 1; seed <= 400; seed += 1) {
+    for (let seed = 1; seed <= 1200; seed += 1) {
       const t = deriveTruths(seed);
-      pairs.add(`${t.wenLoyalty}|${t.arsonPatron}`);
+      pairs.add(`${t.wenLoyalty}|${t.arsonPatron}|${t.leakLink}`);
     }
-    // 四种组合都应出现，说明两个真相彼此独立
-    expect(pairs.size).toBe(4);
+    expect(pairs.size).toBe(12);
   });
 
   it("两种真相在种子空间里都足够常见，不存在死剧情线", () => {
     let compromised = 0;
     let dowager = 0;
+    const leakCounts = new Map<string, number>();
     const N = 600;
     for (let seed = 1; seed <= N; seed += 1) {
       const t = deriveTruths(seed);
       if (t.wenLoyalty === "compromised") compromised += 1;
       if (t.arsonPatron === "dowager") dowager += 1;
+      leakCounts.set(t.leakLink, (leakCounts.get(t.leakLink) ?? 0) + 1);
     }
     // 每条线至少要占到一成，否则玩家几生几世遇不到
     expect(compromised / N).toBeGreaterThan(0.1);
     expect(dowager / N).toBeGreaterThan(0.1);
+    expect(leakCounts.size).toBe(3);
+    for (const count of leakCounts.values()) {
+      expect(count / N).toBeGreaterThan(0.1);
+    }
   });
 
   it("第8日：同样救下温疏雨，她是否干净决定了两个不同结果", () => {

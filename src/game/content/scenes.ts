@@ -894,7 +894,7 @@ export const scenes: Record<string, Scene> = {
         id: "day4_seize_ledger",
         text: "拒绝私情，将账簿立即封存呈报。",
         outcome:
-          "账簿进入公案，裴照南的兄长也在天亮前被停职。她向你行礼，礼数无可挑剔。",
+          "账簿进入公案，裴照南的兄长也在天亮前被停职。她向你行礼，礼数无可挑剔。司籍女史谢明微接过账册，先记谁交、谁见，再在缺页处留下一道空白。",
         effect: {
           stats: { 礼仪: 1, 名望: 1 },
           tags: ["day4_ledger_official", "day4_pei_alienated"],

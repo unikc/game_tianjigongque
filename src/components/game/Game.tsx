@@ -1,15 +1,19 @@
 "use client";
+import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ChoiceButton,
   ConfirmationDialog,
   GameShell,
+  HubPageHeader,
+  PalacePanel,
   Portrait,
   ProgressBar,
+  ReadOnlyMemoryCard,
   RelationshipCard,
-  SaveIndicator,
 } from "../../../imperial-design-system";
 import { characters } from "../../game/characters";
+import { relationshipProfiles } from "../../game/relationships";
 import { origins } from "../../game/content/origins";
 import { scenes } from "../../game/content/scenes";
 import {
@@ -22,6 +26,30 @@ import { storyArc } from "../../game/content/story-arc";
 import { zodiacs } from "../../game/content/zodiacs";
 import { isChoiceAvailable } from "../../game/state/availability";
 import {
+  deriveStrategyProfile,
+  strategyModes,
+} from "../../game/state/narrative-memory";
+import {
+  evaluatePlayerRegency,
+  legitimacyStatements,
+  resolveLegitimacyTransition,
+} from "../../game/state/political-legitimacy";
+import {
+  cuiAcceptanceCopy,
+  cuiMemoryCallback,
+  deriveCuiResponsibility,
+} from "../../game/state/dowager-cui";
+import {
+  buildXieReviewScene,
+  xieAdaptiveCopy,
+  xieCurrentStance,
+} from "../../game/state/xie-mingwei";
+import {
+  buildLeakReturnScene,
+  leakCanaries,
+  observedLeakLink,
+} from "../../game/state/leak-investigation";
+import {
   applyEffect,
   ACTION_POINT_CAP,
   archetype,
@@ -32,15 +60,18 @@ import {
   evaluate,
   evaluatePromotion,
   growthCost,
+  isRelationshipAvailable,
   resolveEnding,
   resumeDestination,
   rankOrder,
   residenceFor,
   performPalaceAction,
+  resourceStage,
   SAVE_KEY,
   safeStorage,
   serialize,
   spendGrowthPoint,
+  type PalaceAction,
 } from "../../game/state/engine";
 import type {
   ChapterId,
@@ -84,6 +115,18 @@ const rewardGuides: Record<
     hidden: "隐藏线索：同一枚印曾出现在军粮调令上。",
   },
 };
+
+type ThemeMode = "day" | "night" | "system";
+const THEME_KEY = "tianji-palace-theme";
+const themeOptions: Array<{
+  id: ThemeMode;
+  label: string;
+  description: string;
+}> = [
+  { id: "day", label: "日间", description: "明纸暖金，适合光线充足时阅读。" },
+  { id: "night", label: "夜间", description: "黛青暗纸，降低夜间眩光。" },
+  { id: "system", label: "跟随系统", description: "随 iPhone 外观自动切换。" },
+];
 
 /** 任一人物关系值下降时返回 true，用于给负面后果一个不同的触感反馈。 */
 function hasRelationLoss(before: GameState, after: GameState): boolean {
@@ -215,15 +258,28 @@ function RewardSummary({ reward }: { reward: Reward }) {
 function RelationshipPanel({ state }: { state: GameState }) {
   return (
     <div className="relations" aria-label="人物关系">
-      {Object.entries(state.relations).map(([k, v]) => (
-        <RelationshipCard key={k} label={k} value={v} />
-      ))}
+      {(Object.entries(state.relations) as [RelationKey, number][])
+        .filter(
+          ([name]) =>
+            relationshipProfiles[name].knownAfter <=
+            state.completedChapters.length,
+        )
+        .map(([name, value]) => (
+          <RelationshipCard key={name} label={name} value={value} />
+        ))}
     </div>
   );
 }
 function ChoiceOutcome({ state }: { state: GameState }) {
   const id = state.history[state.history.length - 1];
-  const choice = Object.values(scenes)
+  const searchableScenes = [
+    ...Object.values(scenes),
+    ...(id?.startsWith("day8_xie_") ? [buildXieReviewScene(state)] : []),
+    ...(id?.startsWith("day9_leak_accuse_")
+      ? [buildLeakReturnScene(state)]
+      : []),
+  ];
+  const choice = searchableScenes
     .flatMap((scene) => scene.choices)
     .find((item) => item.id === id && item.next === state.sceneId);
   if (!choice) return null;
@@ -239,10 +295,12 @@ function ChoiceOutcome({ state }: { state: GameState }) {
       kind: "relation" as const,
     })),
   ];
+  const contextualOutcome =
+    id === "day10_3_1" ? cuiAcceptanceCopy(state.tags) : null;
   return (
     <aside className="outcome" role="status" aria-live="polite">
       <span className="outcome-label">方才</span>
-      <p>{choice.outcome}</p>
+      <p>{contextualOutcome ?? choice.outcome}</p>
       {changes.length > 0 && (
         <div className="change-list" aria-label="数值变化">
           {changes.map((change) => (
@@ -257,9 +315,6 @@ function ChoiceOutcome({ state }: { state: GameState }) {
                 {change.value > 0 ? "+" : ""}
                 {change.kind === "relation" ? change.value * 10 : change.value}
               </strong>
-              {change.kind === "relation" && (
-                <i className="relation-thread" aria-hidden="true" />
-              )}
             </span>
           ))}
         </div>
@@ -269,10 +324,12 @@ function ChoiceOutcome({ state }: { state: GameState }) {
 }
 function SideStoryPanel({
   story,
+  state,
   onChoose,
   onLeave,
 }: {
   story: SideStory;
+  state: GameState;
   onChoose: (choice: SideStoryChoice) => void;
   onLeave: () => void;
 }) {
@@ -290,15 +347,24 @@ function SideStoryPanel({
       <h2 id="side-story-title">{story.title}</h2>
       <p>{story.text}</p>
       <div className="choices">
-        {story.choices.map((choice, index) => (
-          <ChoiceButton
-            key={choice.id}
-            index={index}
-            onClick={() => onChoose(choice)}
-          >
-            {choice.text}
-          </ChoiceButton>
-        ))}
+        {story.choices.map((choice, index) => {
+          const unavailable =
+            choice.requiresStat &&
+            state.stats[choice.requiresStat.stat] < choice.requiresStat.min;
+          return (
+            <ChoiceButton
+              key={choice.id}
+              index={index}
+              disabled={Boolean(unavailable)}
+              onClick={() => onChoose(choice)}
+            >
+              {choice.text}
+              {unavailable
+                ? `（需${choice.requiresStat?.stat}${choice.requiresStat?.min}）`
+                : ""}
+            </ChoiceButton>
+          );
+        })}
       </div>
     </section>
   );
@@ -313,7 +379,12 @@ function DialoguePanel({
   onLeaveStory: () => void;
 }) {
   const [choicePage, setChoicePage] = useState(0);
-  const scene = scenes[state.sceneId];
+  const scene =
+    state.sceneId === "day8_xie_review"
+      ? buildXieReviewScene(state)
+      : state.sceneId === "day9_leak_return"
+        ? buildLeakReturnScene(state)
+        : scenes[state.sceneId];
   const availableChoices = scene.choices.filter((choice) =>
     isChoiceAvailable(state, choice),
   );
@@ -324,7 +395,7 @@ function DialoguePanel({
   const progress = scene.progress
     ? (scene.progress.current / scene.progress.total) * 100
     : ((state.history.length + 1) / 6) * 100;
-  const choicesPerPage = 3;
+  const choicesPerPage = scene.id === "day9_leak_return" ? 4 : 3;
   const choicePageCount = Math.ceil(availableChoices.length / choicesPerPage);
   const visibleChoices = availableChoices.slice(
     choicePage * choicesPerPage,
@@ -332,6 +403,12 @@ function DialoguePanel({
   );
   const sceneBackground =
     backgrounds[scene.backgroundId ?? "palace-courtyard-day"];
+  const legitimacy =
+    scene.id === "day10_3" ? evaluatePlayerRegency(state) : null;
+  const legitimacyNotes = legitimacy ? legitimacyStatements(state) : [];
+  const cuiCallback = scene.id === "day10_3" ? cuiMemoryCallback(state) : null;
+  const xieAdaptations =
+    scene.id === "day8_xie_review" ? xieAdaptiveCopy(state) : [];
   return (
     <div className="dialogue-screen">
       <nav className="story-nav" aria-label="剧情导航">
@@ -369,36 +446,104 @@ function DialoguePanel({
       </div>
       <ChoiceOutcome state={state} />
       <div className="dialogue">{scene.text}</div>
-      <div className="choices">
-        {visibleChoices.map((c, i) => (
-          <ChoiceButton
-            key={c.id}
-            index={choicePage * choicesPerPage + i}
-            onClick={() => onChoose(c)}
-          >
-            {c.text}
-          </ChoiceButton>
-        ))}
-        {choicePageCount > 1 && (
-          <div className="choice-pager" aria-label="更多选择">
-            <button
-              disabled={choicePage === 0}
-              onClick={() => setChoicePage((page) => page - 1)}
+      {scene.id === "day9_leak_canaries" && (
+        <ol className="leak-slips" aria-label="三份试探札">
+          {leakCanaries.map((record, index) => {
+            const choice = availableChoices[index];
+            return (
+              <li key={record.link}>
+                <button onClick={() => onChoose(choice)}>
+                  <span aria-hidden="true">{record.mark}</span>
+                  <p>
+                    <b>{record.route}</b>
+                    {record.message}
+                    <small>{choice.text}</small>
+                  </p>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+      {scene.id === "day9_leak_return" && (
+        <aside className="leak-return" aria-label="所监看试探札的回报">
+          <span aria-hidden="true">报</span>
+          <p>
+            <b>你所监看的记录</b>
+            {observedLeakLink(state)
+              ? leakCanaries.find(
+                  (record) => record.link === observedLeakLink(state),
+                )?.message
+              : "火场回报尚未齐全。"}
+          </p>
+        </aside>
+      )}
+      {xieAdaptations.length > 0 && (
+        <blockquote className="xie-adaptation" aria-label="谢明微的观察">
+          {xieAdaptations.map((copy) => (
+            <p key={copy}>{copy}</p>
+          ))}
+        </blockquote>
+      )}
+      {cuiCallback && (
+        <blockquote className="cui-memory-callback">
+          <span>太后记得</span>“{cuiCallback}”
+        </blockquote>
+      )}
+      {legitimacy && (
+        <aside
+          className="legitimacy-context"
+          aria-labelledby="legitimacy-title"
+        >
+          <h3 id="legitimacy-title">落笔之前</h3>
+          {legitimacyNotes.length > 0 ? (
+            <ul>
+              {legitimacyNotes.map((note) => (
+                <li key={note}>{note}</li>
+              ))}
+            </ul>
+          ) : (
+            <p>你能处理危局，却还没有一条可公开援引的授权。</p>
+          )}
+          <p className="legitimacy-conclusion">
+            {legitimacy.acceptedAlternative
+              ? `你可据此落笔：${legitimacy.acceptedAlternative.label}。`
+              : "若独自署名，明日必有人追问；仍可当场改用共署或联署。"}
+          </p>
+        </aside>
+      )}
+      {scene.id !== "day9_leak_canaries" && (
+        <div className="choices">
+          {visibleChoices.map((c, i) => (
+            <ChoiceButton
+              key={c.id}
+              index={choicePage * choicesPerPage + i}
+              onClick={() => onChoose(c)}
             >
-              上一组
-            </button>
-            <span>
-              选择 {choicePage + 1}/{choicePageCount}
-            </span>
-            <button
-              disabled={choicePage === choicePageCount - 1}
-              onClick={() => setChoicePage((page) => page + 1)}
-            >
-              下一组
-            </button>
-          </div>
-        )}
-      </div>
+              {c.text}
+            </ChoiceButton>
+          ))}
+          {choicePageCount > 1 && (
+            <div className="choice-pager" aria-label="更多选择">
+              <button
+                disabled={choicePage === 0}
+                onClick={() => setChoicePage((page) => page - 1)}
+              >
+                上一组
+              </button>
+              <span>
+                选择 {choicePage + 1}/{choicePageCount}
+              </span>
+              <button
+                disabled={choicePage === choicePageCount - 1}
+                onClick={() => setChoicePage((page) => page + 1)}
+              >
+                下一组
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -416,7 +561,6 @@ function Title({
       <div className="opening-edict">
         <span className="edict-cord" aria-hidden="true" />
         <span className="eyebrow">大晟 · 宫廷生存录</span>
-        <span className="edict-preface">奉天承运 · 内廷录</span>
         <h1>
           天机
           <br />
@@ -509,25 +653,39 @@ function Origin({
                 OriginId,
                 (typeof origins)[OriginId],
               ][]
-            ).map(([id, item]) => (
-              <button
-                key={id}
-                className={`origin-card ${origin === id ? "selected" : ""}`}
-                onClick={() => setOrigin(id)}
-                aria-pressed={origin === id}
-              >
-                <h3>{item.name}</h3>
-                <div className="deltas">
-                  {Object.entries(item.deltas)
-                    .map(
-                      ([key, value]) =>
-                        `${key} ${value! > 0 ? "+" : ""}${value}`,
-                    )
-                    .join(" · ")}
-                </div>
-                <p>{item.description}</p>
-              </button>
-            ))}
+            ).map(([id, item]) => {
+              const deltaLabel = Object.entries(item.deltas)
+                .map(
+                  ([key, value]) => `${key} ${value! > 0 ? "+" : ""}${value}`,
+                )
+                .join(" · ");
+              return (
+                <button
+                  key={id}
+                  className={`origin-card ${origin === id ? "selected" : ""}`}
+                  onClick={() => setOrigin(id)}
+                  aria-pressed={origin === id}
+                  aria-label={`选择${item.name}，${deltaLabel}`}
+                >
+                  <Image
+                    className="origin-portrait"
+                    src={item.portrait}
+                    width={720}
+                    height={900}
+                    alt=""
+                    unoptimized
+                  />
+                  <div className="origin-card-copy">
+                    <div className="origin-card-title">
+                      <h3>{item.name}</h3>
+                      {origin === id && <b>已选</b>}
+                    </div>
+                    <span className="deltas">{deltaLabel}</span>
+                    <p className="origin-description">{item.description}</p>
+                  </div>
+                </button>
+              );
+            })}
           </div>
           <div className="origin-actions">
             <button className="secondary" onClick={() => setStep("identity")}>
@@ -562,10 +720,11 @@ function ImperialEdict({
       </div>
       <ChoiceOutcome state={state} />
       <div className="edict">
-        <div className="seal">
-          奉天
-          <br />
-          承运
+        <div className="seal" aria-label="奉天承运御印">
+          <span>奉</span>
+          <span>天</span>
+          <span>承</span>
+          <span>运</span>
         </div>
         <p>皇帝看着那幅绣品，沉吟片刻。</p>
         <p className="quote">
@@ -611,7 +770,6 @@ function RankReveal({
       <div className="topline">
         <span className="eyebrow">第一日 · 尘埃落定</span>
         <div className="run-tools">
-          <SaveIndicator />
           <button className="text-button" onClick={onOpenJournal}>
             行录
           </button>
@@ -680,7 +838,6 @@ function DayTwoResult({
       <div className="topline">
         <span className="eyebrow">第二日 · 宴散留痕</span>
         <div className="run-tools">
-          <SaveIndicator />
           <button className="text-button" onClick={onOpenJournal}>
             行录
           </button>
@@ -734,7 +891,6 @@ function DayThreeResult({
       <div className="topline">
         <span className="eyebrow">第三日 · 香冷人未定</span>
         <div className="run-tools">
-          <SaveIndicator />
           <button className="text-button" onClick={onOpenJournal}>
             行录
           </button>
@@ -790,7 +946,6 @@ function DayFourResult({
       <div className="topline">
         <span className="eyebrow">第四日 · 雨歇印未干</span>
         <div className="run-tools">
-          <SaveIndicator />
           <button className="text-button" onClick={onOpenJournal}>
             行录
           </button>
@@ -858,7 +1013,6 @@ function LaterChapterResult({
           第{chapter}章 · {copy.eyebrow}
         </span>
         <div className="run-tools">
-          <SaveIndicator />
           <button className="text-button" onClick={onOpenJournal}>
             行录
           </button>
@@ -932,17 +1086,41 @@ const laterChapterArt = [
   "/chapters/chapter-12-after-dawn.webp",
 ];
 
-type PalaceContact = {
+type PalaceContactBase = {
   id: string;
   name: string;
   rank: string;
   description: string;
   portrait?: string;
   focalPoint?: string;
-  relationKey?: RelationKey;
   knownAfter: number;
 };
+type PalaceContact = PalaceContactBase &
+  (
+    | { bond: { kind: "emperor" } }
+    | { bond: { kind: "court"; key: RelationKey } }
+  );
 const palaceContacts: PalaceContact[] = [
+  {
+    id: "xie-mingwei",
+    name: characters.xie.name,
+    rank: characters.xie.rank,
+    description: characters.xie.publicPersona,
+    portrait: characters.xie.portrait,
+    focalPoint: "48% 21%",
+    bond: { kind: "court", key: "谢明微" },
+    knownAfter: 4,
+  },
+  {
+    id: "dowager",
+    name: characters.dowager.name,
+    rank: characters.dowager.rank,
+    description: characters.dowager.publicPersona,
+    portrait: characters.dowager.portrait,
+    focalPoint: "50% 28%",
+    bond: { kind: "court", key: "崔氏" },
+    knownAfter: 4,
+  },
   {
     id: "emperor",
     name: "萧承元",
@@ -951,6 +1129,7 @@ const palaceContacts: PalaceContact[] = [
     portrait: "/characters/xiao-chengyuan-emperor-v01.webp",
     focalPoint: "50% 16%",
     knownAfter: 0,
+    bond: { kind: "emperor" },
   },
   {
     id: "queen",
@@ -959,7 +1138,7 @@ const palaceContacts: PalaceContact[] = [
     description: characters.queen.publicPersona,
     portrait: characters.queen.portrait,
     focalPoint: "50% 17%",
-    relationKey: "沈令仪",
+    bond: { kind: "court", key: "沈令仪" },
     knownAfter: 0,
   },
   {
@@ -969,7 +1148,7 @@ const palaceContacts: PalaceContact[] = [
     description: characters.zhaoyi.publicPersona,
     portrait: characters.zhaoyi.portrait,
     focalPoint: "49% 16%",
-    relationKey: "顾明华",
+    bond: { kind: "court", key: "顾明华" },
     knownAfter: 0,
   },
   {
@@ -979,7 +1158,7 @@ const palaceContacts: PalaceContact[] = [
     description: characters.eunuch.publicPersona,
     portrait: characters.eunuch.portrait,
     focalPoint: "51% 17%",
-    relationKey: "高福安",
+    bond: { kind: "court", key: "高福安" },
     knownAfter: 0,
   },
   {
@@ -990,6 +1169,7 @@ const palaceContacts: PalaceContact[] = [
     portrait: "/characters/lin-qiwu-concubine-v01.webp",
     focalPoint: "50% 17%",
     knownAfter: 1,
+    bond: { kind: "court", key: "林栖梧" },
   },
   {
     id: "wen-shuyu",
@@ -999,6 +1179,7 @@ const palaceContacts: PalaceContact[] = [
     portrait: "/characters/wen-shuyu-physician-v01.webp",
     focalPoint: "50% 17%",
     knownAfter: 2,
+    bond: { kind: "court", key: "温疏雨" },
   },
   {
     id: "pei-zhaonan",
@@ -1008,6 +1189,7 @@ const palaceContacts: PalaceContact[] = [
     portrait: "/characters/pei-zhaonan-guard-v01.webp",
     focalPoint: "50% 16%",
     knownAfter: 3,
+    bond: { kind: "court", key: "裴照南" },
   },
 ];
 
@@ -1021,13 +1203,16 @@ function ChapterHub({
   onResolveSideStory,
   onToggleCarryReward,
   onRelinquishReward,
+  onExitToTitle,
+  onRequestRestart,
+  themeMode,
+  effectiveTheme,
+  onThemeMode,
 }: {
   state: GameState;
   onStartChapter: (sceneId: string) => void;
   onGrow: (stat: StatKey) => void;
-  onAction: (
-    action: "study" | "attend" | "confide" | "network" | "rest",
-  ) => void;
+  onAction: (action: PalaceAction) => void;
   onReturn: () => void;
   onAcknowledgeSideStory: (storyId: string) => void;
   onResolveSideStory: (story: SideStory, choice: SideStoryChoice) => void;
@@ -1037,23 +1222,45 @@ function ChapterHub({
     mode: "gift" | "discard",
     recipient?: RelationKey,
   ) => void;
+  onExitToTitle: () => void;
+  onRequestRestart: () => void;
+  themeMode: ThemeMode;
+  effectiveTheme: "day" | "night";
+  onThemeMode: (mode: ThemeMode) => void;
 }) {
   const chapterOneDone = state.completedChapters.includes("chapter-1");
   const chapterTwoDone = state.completedChapters.includes("chapter-2");
   const chapterThreeDone = state.completedChapters.includes("chapter-3");
   const chapterFourDone = state.completedChapters.includes("chapter-4");
-  const [tab, setTab] = useState<"home" | "character" | "rewards" | "journal">(
-    "home",
-  );
+  const [tab, setTab] = useState<
+    "home" | "character" | "rewards" | "journal" | "settings"
+  >("home");
+  const [journalSection, setJournalSection] = useState<
+    "main" | "side" | "methods"
+  >("main");
   const hubRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     hubRef.current?.closest(".paper")?.scrollTo({ top: 0 });
-  }, [tab]);
+  }, [tab, journalSection]);
   const [chapterPage, setChapterPage] = useState(() =>
     Math.min(2, Math.floor(state.completedChapters.length / 4)),
   );
-  const [journalSection, setJournalSection] = useState<"main" | "side">("main");
-  const [actionFeedback, setActionFeedback] = useState<string>();
+  const [actionFeedback, setActionFeedback] = useState<{
+    message: string;
+    visible: boolean;
+  }>();
+  useEffect(() => {
+    if (!actionFeedback?.visible) return;
+    const duration = actionFeedback.message.length > 26 ? 4500 : 2800;
+    const timeout = window.setTimeout(
+      () =>
+        setActionFeedback((current) =>
+          current ? { ...current, visible: false } : current,
+        ),
+      duration,
+    );
+    return () => window.clearTimeout(timeout);
+  }, [actionFeedback]);
   const [activeSideStory, setActiveSideStory] = useState<SideStory>();
   const [pendingReward, setPendingReward] = useState<{
     reward: Reward;
@@ -1075,7 +1282,9 @@ function ChapterHub({
           ? "day3_incense"
           : nextChapterNumber === 4
             ? "day4_blank_seal"
-            : `day${nextChapterNumber}_1`;
+            : nextChapterNumber === 9
+              ? "day9_1"
+              : `day${nextChapterNumber}_1`;
   const activeScene = scenes[state.sceneId];
   const hasActiveStory = Boolean(activeScene);
   const currentStorySceneId = hasActiveStory ? state.sceneId : nextSceneId;
@@ -1085,14 +1294,17 @@ function ChapterHub({
   const currentStorySummary = hasActiveStory
     ? "你的选择停在这里，返回时会从当前场景继续。"
     : nextChapter.theme;
+  const relationEntries = (
+    Object.entries(state.relations) as [RelationKey, number][]
+  ).filter(([name]) => isRelationshipAvailable(state, name));
+  const networkCandidates = state.tags.includes("debt:高福安")
+    ? relationEntries.filter(([name]) => name !== "高福安")
+    : relationEntries;
   const networkTarget = (
-    Object.entries(state.relations) as [string, number][]
+    networkCandidates.length ? networkCandidates : relationEntries
   ).sort((a, b) => a[1] - b[1])[0][0];
-  const takeAction = (
-    action: "study" | "attend" | "confide" | "network" | "rest",
-    feedback: string,
-  ) => {
-    setActionFeedback(feedback);
+  const takeAction = (action: PalaceAction, feedback: string) => {
+    setActionFeedback({ message: feedback, visible: true });
     onAction(action);
   };
   const unlockedSideStories = availableSideStories(state);
@@ -1104,9 +1316,18 @@ function ChapterHub({
       state.resolvedSideStories.includes(story.id) ||
       unlockedSideStories.some((available) => available.id === story.id),
   );
+  const formedMethods = deriveStrategyProfile(state)
+    .filter((entry) => entry.formed && entry.example)
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 4);
   const carriedRewards = state.rewards.filter((reward) =>
     state.tags.includes(`carried_reward:${reward.id}`),
   );
+  const staminaStage = resourceStage(state.stats.体力);
+  const moneyStage =
+    state.stats.银钱 >= 10
+      ? ({ label: "招眼", tone: "critical" } as const)
+      : resourceStage(state.stats.银钱);
   const emperorFavorStage =
     state.emperor.favor >= 80
       ? "深宠"
@@ -1118,6 +1339,9 @@ function ChapterHub({
             ? "留意"
             : "陌生";
   const chapterActionKey = state.completedChapters.length + 1;
+  const raisedFundsThisChapter = state.tags.includes(
+    `action_raised_funds_chapter_${chapterActionKey}`,
+  );
   const studiedThisChapter = state.tags.includes(
     `action_studied_chapter_${chapterActionKey}`,
   );
@@ -1127,7 +1351,18 @@ function ChapterHub({
   const confidedThisChapter = state.tags.includes(
     `action_confided_emperor_chapter_${chapterActionKey}`,
   );
+  const imperialVisit = confidedThisChapter
+    ? "留谈"
+    : attendedThisChapter
+      ? "曾临"
+      : "未至";
   const attention = courtAttention(state);
+  const cuiResponsibility = deriveCuiResponsibility(state);
+  const cuiResponsibilityLabel = {
+    "guards-continuity": "守礼制",
+    "permits-accountability": "许追责",
+    "witnesses-transition": "见证交接",
+  }[cuiResponsibility];
   const attentionStage =
     attention >= 30
       ? "风口浪尖"
@@ -1159,6 +1394,7 @@ function ChapterHub({
     return (
       <SideStoryPanel
         story={activeSideStory}
+        state={state}
         onLeave={() => setActiveSideStory(undefined)}
         onChoose={(choice) => {
           onResolveSideStory(activeSideStory, choice);
@@ -1169,21 +1405,14 @@ function ChapterHub({
   }
   return (
     <div ref={hubRef} className={`chapter-hub hub-mode-${tab}`}>
-      <div className="topline">
-        <div>
-          <span className="eyebrow">内廷起居</span>
-          <h2>
-            {tab === "home"
-              ? residence.name
-              : `${state.rank ?? "答应"} · ${state.name}`}
-          </h2>
+      {tab === "home" && (
+        <div className="topline hub-topline">
+          <div>
+            <span className="eyebrow">内廷起居</span>
+            <h2>{residence.name}</h2>
+          </div>
         </div>
-        {hasActiveStory && tab !== "home" && (
-          <button className="text-button" onClick={onReturn}>
-            继续剧情
-          </button>
-        )}
-      </div>
+      )}
       <nav className="hub-tabs" aria-label="寝宫主导航" data-active-tab={tab}>
         <button
           data-audio-cue="paper.turn"
@@ -1213,8 +1442,116 @@ function ChapterHub({
         >
           行录
         </button>
-        <i className="tab-indicator" aria-hidden="true" />
+        <button
+          data-audio-cue="paper.turn"
+          onClick={() => setTab("settings")}
+          aria-pressed={tab === "settings"}
+        >
+          设置
+        </button>
       </nav>
+      {tab === "settings" && (
+        <section className="settings-panel" aria-labelledby="settings-title">
+          <HubPageHeader
+            eyebrow="起居设定"
+            title="按你的时辰游玩"
+            titleId="settings-title"
+            description="外观设置会保存在本机，不会影响剧情存档与选择结果。"
+            action={
+              hasActiveStory ? (
+                <button className="text-button" onClick={onReturn}>
+                  继续剧情
+                </button>
+              ) : undefined
+            }
+          />
+          <fieldset className="appearance-options">
+            <legend>外观</legend>
+            {themeOptions.map((option) => (
+              <label key={option.id} className="setting-choice">
+                <input
+                  type="radio"
+                  name="appearance"
+                  value={option.id}
+                  checked={themeMode === option.id}
+                  onChange={() => onThemeMode(option.id)}
+                />
+                <span
+                  className={`theme-swatch ${option.id}`}
+                  aria-hidden="true"
+                />
+                <span>
+                  <b>{option.label}</b>
+                  <small>
+                    {option.id === "system"
+                      ? `当前${effectiveTheme === "night" ? "夜间" : "日间"} · ${option.description}`
+                      : option.description}
+                  </small>
+                </span>
+                <i aria-hidden="true">
+                  {themeMode === option.id ? "已选" : ""}
+                </i>
+              </label>
+            ))}
+          </fieldset>
+          <section
+            className="language-settings"
+            aria-labelledby="language-title"
+          >
+            <div className="settings-section-heading">
+              <div>
+                <span className="section-label">语言</span>
+                <h3 id="language-title">游戏文字</h3>
+              </div>
+            </div>
+            <div
+              className="language-list"
+              role="radiogroup"
+              aria-label="游戏文字"
+            >
+              <label className="language-choice selected">
+                <input
+                  type="radio"
+                  name="language"
+                  value="zh-CN"
+                  checked
+                  readOnly
+                />
+                <span>简体中文</span>
+                <b>已选</b>
+              </label>
+              {["繁體中文", "English", "日本語", "Español"].map((language) => (
+                <div
+                  className="language-choice language-coming"
+                  key={language}
+                  aria-disabled="true"
+                >
+                  <span>{language}</span>
+                  <b>制作中</b>
+                </div>
+              ))}
+            </div>
+          </section>
+          <section
+            className="save-settings"
+            aria-labelledby="save-settings-title"
+          >
+            <div>
+              <span className="section-label">本局</span>
+              <h3 id="save-settings-title">存档与重开</h3>
+              <p>进度会在每次选择后自动保存。</p>
+            </div>
+            <div className="settings-sheet-actions">
+              <button className="secondary" onClick={onExitToTitle}>
+                返回标题
+              </button>
+              <button className="settings-restart" onClick={onRequestRestart}>
+                重新入宫
+              </button>
+            </div>
+          </section>
+        </section>
+      )}
       {tab === "home" && (
         <>
           <section
@@ -1229,24 +1566,23 @@ function ChapterHub({
               <b>{residence.bonus}</b>
             </div>
           </section>
+          <button
+            className="carried-strip"
+            onClick={() => setTab("rewards")}
+            aria-label={`查看随身物，当前${carriedRewards.length ? carriedRewards.map((reward) => reward.name).join("、") : "未携物"}`}
+          >
+            <span>随身物</span>
+            <b>
+              {carriedRewards.length
+                ? carriedRewards.map((reward) => reward.name).join(" · ")
+                : "未携物"}
+            </b>
+            <i aria-hidden="true">查看珍藏 ›</i>
+          </button>
           <section className="residence-status" aria-label="寝宫当前状态">
             <article>
               <span>位分</span>
               <b>{state.rank ?? "答应"}</b>
-            </article>
-            <article>
-              <span>帝驾</span>
-              <b>
-                {confidedThisChapter
-                  ? "留谈"
-                  : attendedThisChapter
-                    ? "曾临"
-                    : "未至"}
-              </b>
-            </article>
-            <article>
-              <span>随身物</span>
-              <b>{carriedRewards.length} 件</b>
             </article>
             <article>
               <span>闲暇</span>
@@ -1254,11 +1590,43 @@ function ChapterHub({
                 {state.actionPoints}/{ACTION_POINT_CAP}
               </b>
             </article>
+            <article>
+              <span>体力</span>
+              <b>{state.stats.体力}/10</b>
+              <small className={`resource-state ${staminaStage.tone}`}>
+                {staminaStage.label}
+              </small>
+            </article>
+            <article>
+              <span>银钱</span>
+              <b>{state.stats.银钱}</b>
+              <small className={`resource-state ${moneyStage.tone}`}>
+                {moneyStage.label}
+              </small>
+            </article>
           </section>
           <section className="player-home" aria-labelledby="player-home-title">
-            <div className="emperor-bond" id="player-home-title">
+            <PalacePanel tone="imperial" className="current-affair">
+              <span>
+                {hasActiveStory ? "当前剧情" : "今日大事"} · {currentStoryLabel}
+              </span>
+              <h3>{currentStoryTitle}</h3>
+              <p>{currentStorySummary}</p>
+              <button
+                className="primary"
+                onClick={() => onStartChapter(currentStorySceneId)}
+              >
+                {hasActiveStory ? "继续当前剧情" : "开启今日大事"}
+              </button>
+            </PalacePanel>
+            <PalacePanel
+              tone="jade"
+              className="emperor-bond"
+              id="player-home-title"
+            >
               <div>
                 <span>我与皇帝 · 萧承元</span>
+                <span className="emperor-presence">帝驾 · {imperialVisit}</span>
                 <b>{emperorFavorStage}</b>
               </div>
               <div className="emperor-bond-meters">
@@ -1271,21 +1639,12 @@ function ChapterHub({
                   <ProgressBar label="皇帝信任" value={state.emperor.trust} />
                 </label>
               </div>
-            </div>
-            <div className="current-affair">
-              <span>
-                {hasActiveStory ? "当前剧情" : "今日大事"} · {currentStoryLabel}
-              </span>
-              <h3>{currentStoryTitle}</h3>
-              <p>{currentStorySummary}</p>
-              <button
-                className="primary"
-                onClick={() => onStartChapter(currentStorySceneId)}
-              >
-                {hasActiveStory ? "继续当前剧情" : "开启今日大事"}
-              </button>
-            </div>
-            <div className="palace-actions" aria-label="寝宫行动">
+            </PalacePanel>
+            <PalacePanel
+              tone="jade"
+              className="palace-actions"
+              aria-label="寝宫行动"
+            >
               <div className="action-economy">
                 <div>
                   <span>今日安排</span>
@@ -1409,28 +1768,64 @@ function ChapterHub({
                 onClick={() =>
                   takeAction(
                     "rest",
-                    `闭门休息 · 体力 +${residence.id === "jinghe" ? 2 : 1}`,
+                    `静养完成 · 体力 +${(state.stats.体力 <= 2 ? 3 : 2) + (residence.id === "jinghe" ? 1 : 0)}`,
                   )
                 }
               >
-                <span className="action-name">休息</span>
+                <span className="action-name">静养</span>
                 <b className="action-result">
                   {state.stats.体力 >= 10
                     ? "体力已满"
-                    : `体力 +${residence.id === "jinghe" ? 2 : 1}`}
+                    : `体力 +${(state.stats.体力 <= 2 ? 3 : 2) + (residence.id === "jinghe" ? 1 : 0)}`}
                 </b>
                 <small className="action-cost">
                   <span>闲暇 −1</span>
                   <span>低调</span>
                 </small>
               </button>
-            </div>
-            {actionFeedback && (
-              <p className="action-feedback" role="status" aria-live="polite">
-                {actionFeedback}
-              </p>
-            )}
-            <section
+              <button
+                disabled={
+                  state.actionPoints < 1 ||
+                  state.stats.体力 < 1 ||
+                  state.stats.银钱 >= 9 ||
+                  raisedFundsThisChapter
+                }
+                onClick={() =>
+                  takeAction(
+                    "raiseFunds",
+                    "预支月例 · 银钱 +2 · 体力 −1 · 欠高福安人情 · 注目 +2",
+                  )
+                }
+              >
+                <span className="action-name">筹措</span>
+                <b className="action-result">
+                  {raisedFundsThisChapter
+                    ? "本章已支取"
+                    : state.stats.银钱 >= 9
+                      ? "银钱已足"
+                      : state.stats.体力 < 1
+                        ? "体力不足"
+                        : "银钱 +2"}
+                </b>
+                <small className="action-cost">
+                  <span>闲暇 −1</span>
+                  <span>体力 −1</span>
+                  <span>注目 +2</span>
+                  <span className="debt-cost">欠情 · 高福安</span>
+                </small>
+              </button>
+            </PalacePanel>
+            <p
+              className="action-feedback"
+              data-visible={actionFeedback?.visible ?? false}
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {actionFeedback?.message ?? ""}
+            </p>
+            <PalacePanel
+              tone="neutral"
               className="home-growth"
               aria-labelledby="home-growth-title"
             >
@@ -1439,29 +1834,11 @@ function ChapterHub({
                   <span className="section-label">修身进境</span>
                   <h3 id="home-growth-title">我的成长</h3>
                 </div>
+                <b>
+                  {state.growthPoints}
+                  <small>可用修习点</small>
+                </b>
               </div>
-              <dl className="home-resources" aria-label="当前资源">
-                <div>
-                  <dt>体力</dt>
-                  <dd>{state.stats.体力}/10</dd>
-                  <small>行动消耗</small>
-                </div>
-                <div>
-                  <dt>银钱</dt>
-                  <dd>{state.stats.银钱}</dd>
-                  <small>打点往来</small>
-                </div>
-                <div>
-                  <dt>名望</dt>
-                  <dd>{state.stats.名望}</dd>
-                  <small>清议晋位</small>
-                </div>
-                <div>
-                  <dt>修习点</dt>
-                  <dd>{state.growthPoints}</dd>
-                  <small>提升能力</small>
-                </div>
-              </dl>
               <div className="home-growth-list">
                 {growthStats.map((stat) => {
                   const cost = growthCost(state.stats[stat]);
@@ -1486,29 +1863,30 @@ function ChapterHub({
                   );
                 })}
               </div>
-            </section>
+            </PalacePanel>
           </section>
         </>
       )}
 
       {tab === "character" && (
         <section className="character-panel" aria-labelledby="character-title">
-          <div className="character-identity-strip">
-            <span className="section-label">内廷人物志</span>
-            <h3 id="character-title">{state.name}</h3>
-            <p>
-              {state.rank ?? "答应"} · {origins[state.origin].name} · 命宫{" "}
-              {zodiacs[state.zodiac].name}
-            </p>
-          </div>
-          <div className="contact-section-heading">
-            <span className="section-label">关系与暗流</span>
-            <h3>宫中人脉</h3>
-            <p>每一段亲疏，都可能在后来的宫门里回响。</p>
-          </div>
+          <HubPageHeader
+            eyebrow="关系与暗流"
+            title="宫中人脉"
+            titleId="character-title"
+            description="每一段亲疏，都可能在后来的宫门里回响。"
+            action={
+              hasActiveStory ? (
+                <button className="text-button" onClick={onReturn}>
+                  继续剧情
+                </button>
+              ) : undefined
+            }
+          />
           <div className="contact-book" aria-label="已认识的宫中人物">
             {knownContacts.map((contact) => {
-              const relationKey = contact.relationKey;
+              const relationKey =
+                contact.bond.kind === "court" ? contact.bond.key : undefined;
               return (
                 <article
                   className={`contact-dossier ${contact.dead ? "deceased" : ""}`}
@@ -1541,18 +1919,25 @@ function ChapterHub({
                     <h3>{contact.name}</h3>
                     <p>{contact.description}</p>
                   </div>
-                  {contact.id === "emperor" ? (
+                  {contact.bond.kind === "emperor" ? (
                     <div className="contact-bond emperor-contact-bond">
-                      <b>当前关系 · {emperorFavorStage}</b>
+                      <b>与皇帝</b>
+                      <RelationshipCard
+                        label="稳固亲疏"
+                        value={Math.min(
+                          state.emperor.favor,
+                          state.emperor.trust,
+                        )}
+                      />
                       <label>
-                        宠爱
+                        <span>宠爱</span>
                         <ProgressBar
                           label="皇帝宠爱"
                           value={state.emperor.favor}
                         />
                       </label>
                       <label>
-                        信任
+                        <span>信任</span>
                         <ProgressBar
                           label="皇帝信任"
                           value={state.emperor.trust}
@@ -1563,9 +1948,19 @@ function ChapterHub({
                     relationKey && (
                       <div className="contact-bond">
                         <RelationshipCard
-                          label={relationKey}
+                          label={`${contact.dead ? "生前" : ""}${relationshipProfiles[relationKey].label}`}
                           value={state.relations[relationKey]}
                         />
+                        {relationKey === "崔氏" && (
+                          <small className="responsibility-state">
+                            当前立场 · {cuiResponsibilityLabel}
+                          </small>
+                        )}
+                        {relationKey === "谢明微" && (
+                          <small className="responsibility-state">
+                            当前立场 · {xieCurrentStance(state)}
+                          </small>
+                        )}
                         {state.relationshipStrain[relationKey] > 0 && (
                           <small className="strain-warning">
                             暗流累积 · {state.relationshipStrain[relationKey]}
@@ -1587,8 +1982,18 @@ function ChapterHub({
 
       {tab === "journal" && (
         <section className="hub-panel" aria-labelledby="chapter-list-title">
-          <span className="section-label">行录</span>
-          <h3 id="chapter-list-title">宫门纪事</h3>
+          <HubPageHeader
+            eyebrow="行录"
+            title="宫门纪事"
+            titleId="chapter-list-title"
+            action={
+              hasActiveStory ? (
+                <button className="text-button" onClick={onReturn}>
+                  继续剧情
+                </button>
+              ) : undefined
+            }
+          />
           <div className="journal-sections" aria-label="行录分类">
             <button
               aria-pressed={journalSection === "main"}
@@ -1604,6 +2009,12 @@ function ChapterHub({
               {unlockedSideStories.length > 0 && (
                 <b>{unlockedSideStories.length}</b>
               )}
+            </button>
+            <button
+              aria-pressed={journalSection === "methods"}
+              onClick={() => setJournalSection("methods")}
+            >
+              处世录
             </button>
           </div>
           {journalSection === "main" && (
@@ -1798,6 +2209,34 @@ function ChapterHub({
               )}
             </div>
           )}
+          {journalSection === "methods" && (
+            <div className="method-memory-panel">
+              <div className="method-memory-intro">
+                <span className="eyebrow">处世留痕</span>
+                <p>你的行事渐渐留下了这些脉络。</p>
+              </div>
+              {formedMethods.length > 0 ? (
+                <div className="method-memory-list">
+                  {formedMethods.map(({ mode, example }) => {
+                    if (!example) return null;
+                    return (
+                      <ReadOnlyMemoryCard
+                        key={mode}
+                        title={strategyModes[mode].label}
+                        source={`见于 · ${example.label}：${example.detail}`}
+                      >
+                        {strategyModes[mode].description}
+                      </ReadOnlyMemoryCard>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="method-memory-empty">
+                  所行尚少，还未形成一贯的路数。
+                </p>
+              )}
+            </div>
+          )}
         </section>
       )}
 
@@ -1806,8 +2245,18 @@ function ChapterHub({
           className="reward-shelf hub-panel"
           aria-labelledby="reward-title"
         >
-          <span className="section-label">成长与奖励</span>
-          <h3 id="reward-title">所得珍藏</h3>
+          <HubPageHeader
+            eyebrow="成长与奖励"
+            title="所得珍藏"
+            titleId="reward-title"
+            action={
+              hasActiveStory ? (
+                <button className="text-button" onClick={onReturn}>
+                  继续剧情
+                </button>
+              ) : undefined
+            }
+          />
           {state.rewards.length ? (
             <div className="reward-list">
               {state.rewards.map((reward) => (
@@ -1884,14 +2333,19 @@ function ChapterHub({
             <p>赠礼会提升关系，但你将失去物件及相关隐藏剧情入口。</p>
             <div>
               {knownContacts
-                .filter((contact) => contact.relationKey && !contact.dead)
+                .filter(
+                  (contact) => contact.bond.kind === "court" && !contact.dead,
+                )
                 .map((contact) => (
                   <button
                     key={contact.id}
                     onClick={() =>
                       setPendingReward({
                         ...pendingReward,
-                        recipient: contact.relationKey,
+                        recipient:
+                          contact.bond.kind === "court"
+                            ? contact.bond.key
+                            : undefined,
                       })
                     }
                   >
@@ -1982,6 +2436,8 @@ export default function Game() {
   const [state, setState] = useState<GameState | null>(null);
   const [confirmingRestart, setConfirmingRestart] = useState(false);
   const [savedOnDisk, setSavedOnDisk] = useState(false);
+  const [themeMode, setThemeMode] = useState<ThemeMode>("system");
+  const [systemDark, setSystemDark] = useState(false);
   const hasSave = savedOnDisk || state !== null;
   useEffect(() => {
     const timer = window.setTimeout(
@@ -1990,6 +2446,37 @@ export default function Game() {
     );
     return () => window.clearTimeout(timer);
   }, []);
+  useEffect(() => {
+    const stored = safeStorage.get(THEME_KEY);
+    const query = window.matchMedia("(prefers-color-scheme: dark)");
+    const update = () => setSystemDark(query.matches);
+    const timer = window.setTimeout(() => {
+      if (stored === "day" || stored === "night" || stored === "system") {
+        setThemeMode(stored);
+      }
+      update();
+    }, 0);
+    query.addEventListener("change", update);
+    return () => {
+      window.clearTimeout(timer);
+      query.removeEventListener("change", update);
+    };
+  }, []);
+  const resolvedTheme =
+    themeMode === "system" ? (systemDark ? "night" : "day") : themeMode;
+  useEffect(() => {
+    document.documentElement.dataset.gameTheme = resolvedTheme;
+    document.documentElement.style.colorScheme =
+      resolvedTheme === "night" ? "dark" : "light";
+    return () => {
+      delete document.documentElement.dataset.gameTheme;
+      document.documentElement.style.removeProperty("color-scheme");
+    };
+  }, [resolvedTheme]);
+  const chooseTheme = (mode: ThemeMode) => {
+    setThemeMode(mode);
+    safeStorage.set(THEME_KEY, mode);
+  };
   useEffect(() => {
     if (state) safeStorage.set(SAVE_KEY, serialize(state));
   }, [state]);
@@ -2029,7 +2516,8 @@ export default function Game() {
   }
   function choose(choice: Choice) {
     if (!state || !scene) return;
-    const next = applyEffect(state, choice.effect, choice.id, choice.next);
+    const applied = applyEffect(state, choice.effect, choice.id, choice.next);
+    const next = resolveLegitimacyTransition(applied, choice.id);
     // 分级触感：章节结算/晋位是里程碑，关系恶化是负面后果，其余为普通点击。
     // 让"这一步很重"在指尖有实感，是文字游戏在手机上最划算的体验投资。
     if (/_result$/.test(next.sceneId)) void haptics.success();
@@ -2157,6 +2645,11 @@ export default function Game() {
                 ],
               });
             }}
+            onExitToTitle={() => setScreen("title")}
+            onRequestRestart={() => setConfirmingRestart(true)}
+            themeMode={themeMode}
+            effectiveTheme={resolvedTheme}
+            onThemeMode={chooseTheme}
           />
         )}{" "}
         {screen === "play" && state && state.sceneId === "evaluation" && (
@@ -2240,7 +2733,7 @@ export default function Game() {
         <ConfirmationDialog
           eyebrow="撤回名册"
           title="重新入宫？"
-          description="当前选择与封赏会被抹去，无法复原。"
+          description="当前人物、章节、关系与珍藏都会被清除，无法复原；外观设置会保留。"
           confirmLabel="确定重开"
           cancelLabel="留在此局"
           onCancel={() => setConfirmingRestart(false)}

@@ -11,6 +11,15 @@
   --ids-color-royal-blue: #243d5a;
   --ids-color-bronze: #795b32;
   --ids-color-focus: #bf7c39;
+  --ids-color-warning: #8a651d;
+  --ids-surface-canvas: #f4ecd8;
+  --ids-surface-paper: #f4ecd8;
+  --ids-surface-raised: #fffaf0;
+  --ids-surface-soft: #e9dec6;
+  --ids-surface-selected: #efe1c4;
+  --ids-surface-translucent: rgb(255 250 240 / 62%);
+  --ids-color-divider: rgb(164 131 69 / 38%);
+  --ids-color-disabled: #777166;
   --ids-space-1: 4px;
   --ids-space-2: 8px;
   --ids-space-3: 12px;
@@ -59,6 +68,28 @@
   --cinnabar: var(--ids-color-imperial-red);
   --jade: var(--ids-color-jade);
   --gold: var(--ids-color-old-gold);
+}
+
+html[data-game-theme="night"] {
+  --ids-color-rice-paper: #162522;
+  --ids-color-rice-paper-deep: #1d302c;
+  --ids-color-ink: #f2e8d2;
+  --ids-color-jade: #9fc5b5;
+  --ids-color-cloud: #0c1918;
+  --ids-color-fog: #c9beaa;
+  --ids-color-old-gold: #d0b270;
+  --ids-color-imperial-red: #e18a78;
+  --ids-color-imperial-red-dark: #b95f52;
+  --ids-color-focus: #f2cc78;
+  --ids-color-warning: #e2bd72;
+  --ids-surface-canvas: #081614;
+  --ids-surface-paper: #162522;
+  --ids-surface-raised: #263a35;
+  --ids-surface-soft: #1d302c;
+  --ids-surface-selected: #2d463f;
+  --ids-surface-translucent: rgb(38 58 53 / 94%);
+  --ids-color-divider: rgb(208 178 112 / 38%);
+  --ids-color-disabled: #aaa294;
 }
 
 @media (prefers-reduced-motion: reduce) {

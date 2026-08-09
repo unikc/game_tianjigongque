@@ -34,7 +34,14 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="zh-CN">
+    <html lang="zh-CN" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var m=localStorage.getItem("tianji-palace-theme")||"system";var d=m==="night"||(m==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.dataset.gameTheme=d?"night":"day";document.documentElement.style.colorScheme=d?"dark":"light"}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body>
         {children}
         <ServiceWorkerRegistrar />

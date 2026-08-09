@@ -8,6 +8,7 @@ import {
   applyChapter6Patch,
   applyDownstreamHooks,
 } from "./later-scenes-ch6-patch";
+import { xieReviewBaseChoices } from "../state/xie-mingwei";
 
 type SeedChoice = [text: string, outcome: string, tag: string];
 type Beat = [title: string, text: string, choices: SeedChoice[]];
@@ -678,6 +679,63 @@ export const laterScenes: Record<string, Scene> = Object.assign(
 applyChapter5Patch(laterScenes);
 applyChapter6Patch(laterScenes);
 
+laterScenes.day10_legitimacy_veto = {
+  id: "day10_legitimacy_veto",
+  title: "名分之问",
+  chapterLabel: "第10日",
+  progress: { current: 3, total: 3 },
+  speaker: "太后 · 崔氏",
+  portrait: "dowager",
+  text: "你证明了这道口谕不能用，却还没有说明为何该由你落笔。太后隔帘问：明日百官问起，凭哪一条旧例、哪几个人的名字，说这是摄政，不是夺权？你仍可换一种署名，让命令在天亮前生效。",
+  choices: [
+    {
+      id: "day10_veto_dual",
+      text: "退半步，请沈令仪与顾明华共同签署。",
+      outcome: "你放弃独署，两宫以彼此牵制换来一道能被承认的命令。",
+      effect: {
+        relations: { 崔氏: 1 },
+        tags: [
+          "ch10_dual_signature",
+          "legitimacy:regency:claim-withdrawn",
+          "cui_accepts_shared_signature",
+        ],
+      },
+      next: "day10_result",
+    },
+    {
+      id: "day10_veto_public",
+      text: "请朝臣入殿，改为公开联署。",
+      outcome:
+        "你把速度让给程序，命令因此晚了半刻，却不再只靠宫墙内的口头承诺。",
+      effect: {
+        relations: { 崔氏: -1 },
+        tags: [
+          "ch10_public_signature",
+          "legitimacy:regency:claim-withdrawn",
+          "cui_accepts_public_signature",
+        ],
+      },
+      next: "day10_result",
+    },
+    {
+      id: "day10_veto_limited",
+      text: "援引旧例，只署‘帝驾回宫前代行复核’。",
+      outcome:
+        "你把摄政写成有期限的职责，而不是无边界的位置。太后准两宫将期限一并落印，旧例替你守住了落笔的资格。",
+      effect: {
+        relations: { 崔氏: 2 },
+        tags: [
+          "ch10_player_regent",
+          "legitimacy:regency:limited",
+          "cui_accepts_limited_regency",
+        ],
+      },
+      next: "day10_result",
+      requiresTag: "ch8_growth_breakthrough",
+    },
+  ],
+};
+
 function laterChoice(id: string) {
   const found = Object.values(laterScenes)
     .flatMap((scene) => scene.choices)
@@ -770,6 +828,39 @@ Object.assign(laterChoice("day9_2_3").effect, {
     "ch9_mouse_ledger_partial",
   ],
 });
+
+// 独自署名先提出主张，再由政治合法性模型判断是否能被承认。
+// 主张本身绝不能反过来成为自己的依据。
+Object.assign(laterChoice("day10_3_1").effect, {
+  tags: ["ch10_player_regent_claim"],
+});
+laterChoice("day10_3_1").outcome =
+  "你提笔写下第一个字，帘后却先问：这份权力从何而来？纸上的命令仍待承认。";
+
+laterScenes.day10_2.speaker = "太后 · 崔氏";
+laterScenes.day10_2.portrait = "dowager";
+laterScenes.day10_2.text =
+  "太后带来一道声称出自皇帝的口谕，所附赏珠色泽冷白，与第三章仿盒上的珠粉相同。她先道：‘这口谕由崔氏门下递入。哀家不替它作真，只替它走到该受核验的地方。’";
+laterChoice("day10_2_1").outcome +=
+  " 太后命使者退到阶下，只道：‘此令不可用。下一道由谁来签？’";
+laterChoice("day10_2_2").outcome +=
+  " 太后准你追查，却命人把‘暂认至天明’一并写入记录：‘暂认二字，也要有人担。’";
+laterChoice("day10_2_3").outcome +=
+  " 太后承认御前无人亲署，又道：‘医官能证明无人落笔，不能替你决定谁来代笔。’";
+
+laterScenes.day11_1.choices.push({
+  id: "day11_limited_regency_order",
+  text: "【限期摄政】逐队核验两宫签押，命守军只认期限内的复核令。",
+  outcome:
+    "太后命人把期限贴在宫门内外同一高度。内军的命令链稳住了，逐队核验却耽搁了时辰，外门撞击声已经近了一层。",
+  effect: {
+    stats: { 礼仪: 1, 体力: -1 },
+    relations: { 崔氏: 1 },
+    tags: ["ch11_limited_regency_honored"],
+  },
+  next: "day11_2",
+  requiresTag: "legitimacy:regency:limited",
+});
 laterChoice("day9_3_2").requiresAnyTag = [
   "ch9_witnesses_saved",
   "ch9_mouse_ledger",
@@ -784,3 +875,109 @@ laterScenes.day11_1.choices[1].requiresRewardId = "item-empty-seal";
 applyDownstreamHooks(laterScenes);
 applyWenShuyuThread(laterScenes);
 applyUnreliableInfoPatch(laterScenes);
+
+laterChoice("day6_1_3").outcome +=
+  " 谢明微在认捐簿末添了一栏：承诺之人、入账之日、尚欠之数。";
+laterChoice("day6_3_1").outcome +=
+  " 开仓令送进司籍复核时，她只收了有皇后落款的那一页。";
+
+laterScenes.day8_xie_review = {
+  id: "day8_xie_review",
+  title: "三份不同的原本",
+  chapterLabel: "第8日",
+  progress: { current: 3, total: 4 },
+  speaker: "司籍女史 · 谢明微",
+  portrait: "xie",
+  text: "三份记录被摊在案上。谢明微不问你信谁，只问哪一页先到。",
+  choices: xieReviewBaseChoices,
+};
+laterScenes.day8_2.choices.forEach((choice) => {
+  choice.next = "day8_xie_review";
+});
+laterScenes.day8_1.progress = { current: 1, total: 4 };
+laterScenes.day8_2.progress = { current: 2, total: 4 };
+laterScenes.day8_3.progress = { current: 4, total: 4 };
+
+laterScenes.day10_2.text +=
+  "\n\n谢明微指出口谕的传递链断在宫门内递手处，随即退开半步：‘臣能退回这一张，不能替下一张命令找来服从。’";
+
+// E07: the fire reveals a process leak, not a randomly selected villain.
+// Keep the investigation inside chapter nine and preserve every old route.
+laterScenes.day9_leak_canaries = {
+  id: "day9_leak_canaries",
+  title: "三札分路",
+  chapterLabel: "第9日",
+  progress: { current: 2, total: 5 },
+  speaker: "司籍女史 · 谢明微",
+  portrait: "xie",
+  text: "火点追着副册挪过的位置走。谢明微写下三句互不相容的话：‘三句里只有一处会漏，倒比三句都真省纸。’你必须决定把人手放在哪一段。",
+  choices: [
+    {
+      id: "day9_leak_watch_route",
+      text: "跟住路牌：派可信宫人盯御药院偏门。",
+      outcome:
+        "你先取得旧路牌时刻簿，再少留一人救火，把轿牌、口令与经过时辰逐一记下。",
+      effect: {
+        stats: { 体力: -1 },
+        tags: ["leak:canaries-released", "leak:observed:courier-route"],
+      },
+      next: "day9_leak_return",
+    },
+    {
+      id: "day9_leak_audit_review",
+      text: "核对退回笺：与谢明微逐时查青线封签。",
+      outcome:
+        "你取得退回笺离桌记录。谢明微只证明哪张纸离开过桌面，不替任何经手人作无罪保证。",
+      effect: {
+        relations: { 谢明微: 1 },
+        tags: ["leak:canaries-released", "leak:observed:review-copy"],
+      },
+      next: "day9_leak_return",
+    },
+    {
+      id: "day9_leak_run_rumor",
+      text: "让琴匣流言跑完：看谁最先伸手。",
+      outcome:
+        "你先抄下长春宫守门名录，没有立刻截住传言。顾明华的私藏嫌疑先在宫里多活了一刻。",
+      effect: {
+        relations: { 顾明华: -1 },
+        stats: { 名望: -1 },
+        tags: ["leak:canaries-released", "leak:observed:recipient-household"],
+      },
+      next: "day9_leak_return",
+    },
+  ],
+};
+
+// Static shape keeps tooling and branch traversal complete. The playable
+// scene is built from the seed by buildLeakReturnScene.
+laterScenes.day9_leak_return = {
+  id: "day9_leak_return",
+  title: "风声回返",
+  chapterLabel: "第9日",
+  progress: { current: 3, total: 5 },
+  text: "一条假消息带着行动痕迹回来了。它能指出失守的环节，不能替你给某个人定罪。",
+  choices: [
+    ...["review-copy", "courier-route", "recipient-household"].map((link) => ({
+      id: `day9_leak_accuse_${link}`,
+      text: `封查${link}`,
+      outcome: "问责留下后果，调查仍继续。",
+      effect: { tags: [`belief_leak:${link}`, `accused_link:${link}`] },
+      next: "day9_2",
+    })),
+    {
+      id: "day9_leak_rotate_all",
+      text: "公开三札，轮换路线，暂不归责。",
+      outcome: "没有人因一次推断被定罪，真实泄漏者也知道试探已经暴露。",
+      effect: { tags: ["canaries-published", "actual-leak-adapts"] },
+      next: "day9_2",
+    },
+  ],
+};
+
+laterScenes.day9_1.choices.forEach((choice) => {
+  choice.next = "day9_leak_canaries";
+});
+laterScenes.day9_1.progress = { current: 1, total: 5 };
+laterScenes.day9_2.progress = { current: 4, total: 5 };
+laterScenes.day9_3.progress = { current: 5, total: 5 };

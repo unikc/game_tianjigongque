@@ -1,6 +1,34 @@
 import type { CharacterDefinition } from "../types";
 
 export const characters: Record<string, CharacterDefinition> = {
+  xie: {
+    id: "xie-mingwei",
+    name: "谢明微",
+    rank: "尚仪局司籍女史",
+    zodiac: "snake",
+    archetype: "镜中复核者",
+    publicPersona: "不先断真假，只问这一页是谁、何时、经谁递来的。",
+    hiddenMotivation: "让任何新秩序都无法绕开她写下的复核规则。",
+    portrait: "/characters/xie-mingwei-registrar-v01.webp",
+    focalPoint: { x: 48, y: 13 },
+    expressions: {},
+    zodiacIcon: "巳",
+    abilities: ["版本复核", "异议附卷", "流程预判"],
+  },
+  dowager: {
+    id: "cui-empress-dowager",
+    name: "崔氏",
+    rank: "皇太后",
+    zodiac: "ox",
+    archetype: "守制见证者",
+    publicPersona: "言辞简短，只问天亮以后由谁承担。",
+    hiddenMotivation: "让权力更替仍有人承认，同时避免王朝沦为母族私产。",
+    portrait: "/characters/cui-empress-dowager-v01.webp",
+    focalPoint: { x: 50, y: 13 },
+    expressions: {},
+    zodiacIcon: "丑",
+    abilities: ["礼制见证", "名分质询", "体面交接"],
+  },
   queen: {
     id: "shen-lingyi",
     name: "沈令仪",
