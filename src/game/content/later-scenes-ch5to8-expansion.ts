@@ -372,7 +372,7 @@ function buildChapter8Extension(laterScenes: Record<string, Scene>) {
           relations: { 沈令仪: 2 },
           tags: ["ch8_shen_reason_known", "ch8_queen_logic_understood"],
         },
-        next: "day8_3",
+        next: "day8_xie_review",
         ...{ speaker: "皇后 · 沈令仪", portrait: "queen" as const },
       },
       {
@@ -387,7 +387,7 @@ function buildChapter8Extension(laterScenes: Record<string, Scene>) {
           relations: { 沈令仪: -1 },
           tags: ["ch8_shen_condemned", "ch8_queen_admits_overreach"],
         },
-        next: "day8_3",
+        next: "day8_xie_review",
         ...{ speaker: "皇后 · 沈令仪", portrait: "queen" as const },
       },
       {
@@ -402,7 +402,7 @@ function buildChapter8Extension(laterScenes: Record<string, Scene>) {
           relations: { 沈令仪: 5 },
           tags: ["ch8_shen_alliance_deep", "ch8_queen_real_bond"],
         },
-        next: "day8_3",
+        next: "day8_xie_review",
         ...{ speaker: "皇后 · 沈令仪", portrait: "queen" as const },
       },
     ],
@@ -412,7 +412,7 @@ function buildChapter8Extension(laterScenes: Record<string, Scene>) {
   const day8_2 = laterScenes.day8_2;
   if (day8_2) {
     day8_2.choices.forEach((c) => {
-      if (c.next === "day8_3") c.next = "day8_shen_why";
+      if (c.next === "day8_xie_review") c.next = "day8_shen_why";
     });
   }
   if (laterScenes.day8_3) laterScenes.day8_3.progress = { current: 4, total: 4 };
