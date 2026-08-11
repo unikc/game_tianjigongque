@@ -31,6 +31,12 @@ import {
   tianjiTradeScenes,
   ledgerReturnTarget,
 } from "../../game/content/tianji-scenes";
+import { buildBetrayalScene } from "../../game/content/later-scenes";
+import {
+  verseForChapter,
+  verseAlreadySeen,
+  verseSeen,
+} from "../../game/content/chapter-verses";
 import {
   deriveStrategyProfile,
   strategyModes,
@@ -394,7 +400,9 @@ function DialoguePanel({
           ? buildTianjiTradeScene(state, state.sceneId)
           : state.sceneId === "tianji_ledger_called"
             ? buildLedgerScene(state, ledgerReturnTarget)
-            : scenes[state.sceneId];
+            : state.sceneId === "ch11_betrayal"
+              ? buildBetrayalScene(state, "day11_2")
+              : scenes[state.sceneId];
   const availableChoices = scene.choices.filter((choice) =>
     isChoiceAvailable(state, choice),
   );
@@ -1258,6 +1266,8 @@ function ChapterHub({
 }) {
   const chapterOneDone = state.completedChapters.includes("chapter-1");
   const chapterTwoDone = state.completedChapters.includes("chapter-2");
+  const [verseVisible, setVerseVisible] = useState(false);
+  const [pendingSceneId, setPendingSceneId] = useState<string | null>(null);
   const chapterThreeDone = state.completedChapters.includes("chapter-3");
   const chapterFourDone = state.completedChapters.includes("chapter-4");
   const [tab, setTab] = useState<
@@ -1315,6 +1325,29 @@ function ChapterHub({
               : `day${nextChapterNumber}_1`;
   const activeScene = scenes[state.sceneId];
   const hasActiveStory = Boolean(activeScene);
+  const verse = verseForChapter(nextChapterNumber);
+
+  function handleStartChapter(sceneId: string) {
+    const verseUnseen =
+      verse &&
+      !verseAlreadySeen(state.tags, nextChapterNumber) &&
+      !hasActiveStory;
+    if (verseUnseen && !verseVisible) {
+      setPendingSceneId(sceneId);
+      setVerseVisible(true);
+    } else {
+      onStartChapter(sceneId);
+    }
+  }
+
+  function dismissVerse() {
+    setVerseVisible(false);
+    if (pendingSceneId) {
+      onStartChapter(pendingSceneId);
+      setPendingSceneId(null);
+    }
+  }
+
   const currentStorySceneId = hasActiveStory ? state.sceneId : nextSceneId;
   const currentStoryTitle = activeScene?.title ?? nextChapter.title;
   const currentStoryLabel =
@@ -1642,7 +1675,7 @@ function ChapterHub({
               <p>{currentStorySummary}</p>
               <button
                 className="primary"
-                onClick={() => onStartChapter(currentStorySceneId)}
+                onClick={() => handleStartChapter(currentStorySceneId)}
               >
                 {hasActiveStory ? "继续当前剧情" : "开启今日大事"}
               </button>
@@ -2079,7 +2112,7 @@ function ChapterHub({
                   ) : chapterOneDone ? (
                     <button
                       className="primary"
-                      onClick={() => onStartChapter("day2_summons")}
+                      onClick={() => handleStartChapter("day2_summons")}
                     >
                       进入章节
                     </button>
@@ -2105,7 +2138,7 @@ function ChapterHub({
                   ) : chapterTwoDone ? (
                     <button
                       className="primary"
-                      onClick={() => onStartChapter("day3_incense")}
+                      onClick={() => handleStartChapter("day3_incense")}
                     >
                       进入章节
                     </button>
@@ -2131,7 +2164,7 @@ function ChapterHub({
                   ) : chapterThreeDone ? (
                     <button
                       className="primary"
-                      onClick={() => onStartChapter("day4_blank_seal")}
+                      onClick={() => handleStartChapter("day4_blank_seal")}
                     >
                       进入章节
                     </button>
@@ -2169,7 +2202,7 @@ function ChapterHub({
                       ) : available ? (
                         <button
                           className="primary"
-                          onClick={() => onStartChapter(`day${number}_1`)}
+                          onClick={() => handleStartChapter(`day${number}_1`)}
                         >
                           进入章节
                         </button>
@@ -2453,6 +2486,34 @@ function ChapterHub({
             }}
           />
         )}
+      {verseVisible && verse && (
+        <div
+          className="verse-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`第${nextChapterNumber}章谶诗`}
+        >
+          <div className="verse-card">
+            <span className="verse-eyebrow">
+              第{nextChapterNumber}日 · {verse.title}
+            </span>
+            <div className="verse-lines">
+              {verse.lines.map((line, i) => (
+                <p key={i} className="verse-line">
+                  {line}
+                </p>
+              ))}
+            </div>
+            <button
+              className="primary verse-dismiss"
+              onClick={dismissVerse}
+              autoFocus
+            >
+              进入章节
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -2588,7 +2649,13 @@ export default function Game() {
           <ChapterHub
             state={state}
             onStartChapter={(sceneId) => {
-              setState({ ...state, sceneId });
+              // 标记当前章节的谶诗已读（zero-migration：只加 tag）
+              const chapterNum = state.completedChapters.length + 1;
+              const newTag = `verse_seen:chapter-${chapterNum}`;
+              const tagsWithVerse = state.tags.includes(newTag)
+                ? state.tags
+                : [...state.tags, newTag];
+              setState({ ...state, sceneId, tags: tagsWithVerse });
               setScreen("play");
             }}
             onGrow={(stat) => setState(spendGrowthPoint(state, stat))}

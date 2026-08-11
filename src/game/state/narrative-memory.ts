@@ -389,7 +389,8 @@ const definitions: readonly NarrativeMemoryDefinition[] = [
     sceneId: "day5_wen_private",
     sourceChoiceId: "day5_3_wen_protect",
     label: "太医院的路",
-    detail: "你告诉温疏雨：你帮我，我保你一条路。一个诺言出了口，你们之间从此有了一件尚未兑现的账。",
+    detail:
+      "你告诉温疏雨：你帮我，我保你一条路。一个诺言出了口，你们之间从此有了一件尚未兑现的账。",
     sourceActors: ["温疏雨"],
     visibility: "actor",
     strategies: ["care", "leverage"],
@@ -401,7 +402,8 @@ const definitions: readonly NarrativeMemoryDefinition[] = [
     sceneId: "day5_wen_private",
     sourceChoiceId: "day5_3_wen_leverage",
     label: "压着那一行",
-    detail: "你告诉温疏雨：那一行改过的案，我先替你压着。这件事只有你们两个人知道。",
+    detail:
+      "你告诉温疏雨：那一行改过的案，我先替你压着。这件事只有你们两个人知道。",
     sourceActors: ["温疏雨"],
     visibility: "private",
     strategies: ["leverage"],
@@ -413,7 +415,8 @@ const definitions: readonly NarrativeMemoryDefinition[] = [
     sceneId: "day5_lin_names",
     sourceChoiceId: "day5_3_lin_accept",
     label: "记住每一个名字",
-    detail: "林栖梧把那张被刮去名字的名单交给你，你收下并告诉她你会记得每一个名字。",
+    detail:
+      "林栖梧把那张被刮去名字的名单交给你，你收下并告诉她你会记得每一个名字。",
     sourceActors: ["林栖梧"],
     visibility: "actor",
     strategies: ["care"],
@@ -426,7 +429,8 @@ const definitions: readonly NarrativeMemoryDefinition[] = [
     sceneId: "day6_pei_ledger",
     sourceChoiceId: "day6_3_pei_investigate",
     label: "帮她查兄长",
-    detail: "裴照南把军粮账末页拓样递给你，你答应帮她查——但查出来怎么处理，她要接受。",
+    detail:
+      "裴照南把军粮账末页拓样递给你，你答应帮她查——但查出来怎么处理，她要接受。",
     sourceActors: ["裴照南"],
     visibility: "actor",
     strategies: ["care", "command"],
@@ -438,7 +442,8 @@ const definitions: readonly NarrativeMemoryDefinition[] = [
     sceneId: "day6_pei_ledger",
     sourceChoiceId: "day6_3_pei_leverage",
     label: "扣下拓样",
-    detail: "裴照南递来军粮账拓样，上面有她兄长的字迹。你把拓样留下，说先不查。",
+    detail:
+      "裴照南递来军粮账拓样，上面有她兄长的字迹。你把拓样留下，说先不查。",
     sourceActors: ["裴照南"],
     visibility: "private",
     strategies: ["leverage"],
@@ -451,7 +456,8 @@ const definitions: readonly NarrativeMemoryDefinition[] = [
     sceneId: "day7_emperor_wakes",
     sourceChoiceId: "day7_3_emp_truth",
     label: "告诉他那道犹豫",
-    detail: "春猎之后，皇帝问你昨天选了什么。你告诉了他，包括那道让你犹豫的选择。你们之间从此有一件只有两个人知道的事。",
+    detail:
+      "春猎之后，皇帝问你昨天选了什么。你告诉了他，包括那道让你犹豫的选择。你们之间从此有一件只有两个人知道的事。",
     sourceActors: [],
     visibility: "actor",
     strategies: ["command", "care"],

@@ -66,8 +66,7 @@ function buildChapter5Extension(laterScenes: Record<string, Scene>) {
       {
         id: "day5_3_wen_honest",
         text: "如实说：我现在也没有路。我们先各自站稳，以后看情况。",
-        outcome:
-          "她点点头，把副本收回去。这是你们之间迄今最诚实的一句话。",
+        outcome: "她点点头，把副本收回去。这是你们之间迄今最诚实的一句话。",
         effect: {
           stats: { 胆识: 1 },
           relations: { 温疏雨: 2 },
@@ -98,7 +97,11 @@ function buildChapter5Extension(laterScenes: Record<string, Scene>) {
         effect: {
           stats: { 人情: 1 },
           relations: { 林栖梧: 5 },
-          tags: ["holds_deleted_names", "promise_remember_names", "ch5_lin_trust"],
+          tags: [
+            "holds_deleted_names",
+            "promise_remember_names",
+            "ch5_lin_trust",
+          ],
         },
         next: "day5_result",
       },
@@ -175,8 +178,7 @@ function buildChapter6Extension(laterScenes: Record<string, Scene>) {
       {
         id: "day6_3_pei_leverage",
         text: "说：先不查。但这张纸你先放我这里。",
-        outcome:
-          "她没有立刻回答。把拓样留下，意味着她把自己的退路也留下了。",
+        outcome: "她没有立刻回答。把拓样留下，意味着她把自己的退路也留下了。",
         effect: {
           stats: { 谋略: 1 },
           relations: { 裴照南: -3 },
@@ -335,9 +337,12 @@ function buildChapter7Extension(laterScenes: Record<string, Scene>) {
   }
 
   // 更新 progress
-  if (laterScenes.day7_1) laterScenes.day7_1.progress = { current: 2, total: 5 };
-  if (laterScenes.day7_2) laterScenes.day7_2.progress = { current: 3, total: 5 };
-  if (laterScenes.day7_3) laterScenes.day7_3.progress = { current: 4, total: 5 };
+  if (laterScenes.day7_1)
+    laterScenes.day7_1.progress = { current: 2, total: 5 };
+  if (laterScenes.day7_2)
+    laterScenes.day7_2.progress = { current: 3, total: 5 };
+  if (laterScenes.day7_3)
+    laterScenes.day7_3.progress = { current: 4, total: 5 };
 }
 
 // ---------------------------------------------------------------------------
@@ -415,7 +420,8 @@ function buildChapter8Extension(laterScenes: Record<string, Scene>) {
       if (c.next === "day8_xie_review") c.next = "day8_shen_why";
     });
   }
-  if (laterScenes.day8_3) laterScenes.day8_3.progress = { current: 4, total: 4 };
+  if (laterScenes.day8_3)
+    laterScenes.day8_3.progress = { current: 4, total: 4 };
 }
 
 // ---------------------------------------------------------------------------
