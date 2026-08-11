@@ -335,6 +335,122 @@ function ChoiceOutcome({ state }: { state: GameState }) {
     </aside>
   );
 }
+function SideStoryImpact({
+  story,
+  choice,
+  statsBefore,
+  relationsBefore,
+  onDismiss,
+}: {
+  story: SideStory;
+  choice: SideStoryChoice;
+  statsBefore: GameState["stats"];
+  relationsBefore: GameState["relations"];
+  onDismiss: () => void;
+}) {
+  const statLabels: Record<string, string> = {
+    才学: "才学",
+    谋略: "谋略",
+    胆识: "胆识",
+    礼仪: "礼仪",
+    人情: "人情",
+    体力: "体力",
+    银钱: "银钱",
+    名望: "名望",
+  };
+  const statChanges = Object.entries(choice.effect.stats ?? {})
+    .map(([k, delta]) => ({ key: k, delta: delta ?? 0 }))
+    .filter((c) => c.delta !== 0);
+  const relationChanges = Object.entries(choice.effect.relations ?? {})
+    .map(([k, delta]) => ({ key: k, delta: delta ?? 0 }))
+    .filter((c) => c.delta !== 0);
+  const emperorChanges: { key: string; delta: number }[] = [];
+  if ((choice.emperor?.favor ?? 0) !== 0)
+    emperorChanges.push({ key: "帝王宠爱", delta: choice.emperor!.favor! });
+  if ((choice.emperor?.trust ?? 0) !== 0)
+    emperorChanges.push({ key: "帝王信任", delta: choice.emperor!.trust! });
+  const tagGains = (choice.effect.tags ?? []).filter(
+    (t) => !t.startsWith("revenge_answered:"),
+  );
+  const hasAnyImpact =
+    statChanges.length > 0 ||
+    relationChanges.length > 0 ||
+    emperorChanges.length > 0 ||
+    tagGains.length > 0 ||
+    choice.demote;
+
+  return (
+    <section className="side-story side-story--impact" aria-labelledby="impact-title">
+      <div className="topline">
+        <span className="eyebrow">{story.eyebrow} · 结算</span>
+      </div>
+      <div className={`side-story-seal ${story.danger ? "danger" : ""}`}>
+        {story.danger ? "危" : "秘"}
+      </div>
+      <h2 id="impact-title">{story.title}</h2>
+      <p className="side-story-outcome">{choice.outcome}</p>
+      {hasAnyImpact && (
+        <div className="impact-summary">
+          {choice.demote && (
+            <div className="impact-row impact-bad">
+              <span className="impact-label">位分</span>
+              <span className="impact-value">降位一级</span>
+            </div>
+          )}
+          {statChanges.map(({ key, delta }) => (
+            <div
+              key={key}
+              className={`impact-row ${delta > 0 ? "impact-good" : "impact-bad"}`}
+            >
+              <span className="impact-label">{statLabels[key] ?? key}</span>
+              <span className="impact-value">
+                {delta > 0 ? `+${delta}` : delta}
+              </span>
+            </div>
+          ))}
+          {relationChanges.map(({ key, delta }) => (
+            <div
+              key={key}
+              className={`impact-row ${delta > 0 ? "impact-good" : "impact-bad"}`}
+            >
+              <span className="impact-label">与{key}关系</span>
+              <span className="impact-value">
+                {delta > 0 ? `+${delta}` : delta}
+              </span>
+            </div>
+          ))}
+          {emperorChanges.map(({ key, delta }) => (
+            <div
+              key={key}
+              className={`impact-row ${delta > 0 ? "impact-good" : "impact-bad"}`}
+            >
+              <span className="impact-label">{key}</span>
+              <span className="impact-value">
+                {delta > 0 ? `+${delta}` : delta}
+              </span>
+            </div>
+          ))}
+          {tagGains.length > 0 && (
+            <div className="impact-row impact-tag">
+              <span className="impact-label">记录</span>
+              <span className="impact-tags">
+                {tagGains.slice(0, 3).map((t) => (
+                  <span key={t} className="impact-tag-chip">
+                    {t.replace(/[:_]/g, " ")}
+                  </span>
+                ))}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+      <button className="primary" onClick={onDismiss} autoFocus>
+        收下，继续
+      </button>
+    </section>
+  );
+}
+
 function SideStoryPanel({
   story,
   state,
@@ -346,6 +462,23 @@ function SideStoryPanel({
   onChoose: (choice: SideStoryChoice) => void;
   onLeave: () => void;
 }) {
+  const [resolved, setResolved] = useState<SideStoryChoice | null>(null);
+
+  if (resolved) {
+    return (
+      <SideStoryImpact
+        story={story}
+        choice={resolved}
+        statsBefore={state.stats}
+        relationsBefore={state.relations}
+        onDismiss={() => {
+          onChoose(resolved);
+          setResolved(null);
+        }}
+      />
+    );
+  }
+
   return (
     <section className="side-story" aria-labelledby="side-story-title">
       <div className="topline">
@@ -369,7 +502,7 @@ function SideStoryPanel({
               key={choice.id}
               index={index}
               disabled={Boolean(unavailable)}
-              onClick={() => onChoose(choice)}
+              onClick={() => setResolved(choice)}
             >
               {choice.text}
               {unavailable

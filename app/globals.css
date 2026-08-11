@@ -5171,3 +5171,96 @@ html[data-game-theme="night"] button {
     transform: none;
   }
 }
+
+/* ── 副本结算 impact 卡 ───────────────────────────────────────────────── */
+.side-story--impact > p.side-story-outcome {
+  max-width: 34rem;
+  margin: var(--ids-space-3) auto var(--ids-space-4);
+  line-height: 1.75;
+  text-align: left;
+  color: var(--ids-color-ink-mid, #6b6350);
+  font-style: italic;
+}
+
+.impact-summary {
+  display: grid;
+  gap: 6px;
+  max-width: 28rem;
+  margin: 0 auto var(--ids-space-5);
+  text-align: left;
+}
+
+.impact-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ids-space-2);
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.impact-row.impact-good {
+  background: rgb(72 140 120 / 10%);
+}
+
+.impact-row.impact-bad {
+  background: rgb(180 60 60 / 10%);
+}
+
+.impact-row.impact-tag {
+  background: rgb(100 90 60 / 8%);
+  flex-wrap: wrap;
+}
+
+.impact-label {
+  flex: 0 0 auto;
+  color: var(--ids-color-ink-mid, #6b6350);
+  font-size: 0.82rem;
+  min-width: 6rem;
+}
+
+.impact-value {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.impact-row.impact-good .impact-value {
+  color: var(--ids-color-jade, #3d8b6e);
+}
+
+.impact-row.impact-bad .impact-value {
+  color: var(--ids-color-imperial-red, #b44040);
+}
+
+.impact-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.impact-tag-chip {
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgb(100 90 60 / 15%);
+  font-size: 0.75rem;
+  color: var(--ids-color-ink-mid, #6b6350);
+  font-family: var(--ids-font-mono, monospace);
+}
+
+/* ── 场景内压力预警条 ────────────────────────────────────────────────── */
+.pressure-warnings {
+  margin: var(--ids-space-3) 0 0;
+  padding: var(--ids-space-2) var(--ids-space-3);
+  border-left: 3px solid var(--ids-color-imperial-red, #b44040);
+  background: rgb(180 60 60 / 6%);
+  border-radius: 0 4px 4px 0;
+}
+
+.pressure-warning-line {
+  margin: 0;
+  padding: 3px 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--ids-color-imperial-red, #b44040);
+}
