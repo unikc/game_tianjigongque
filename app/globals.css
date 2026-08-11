@@ -5299,3 +5299,97 @@ html[data-game-theme="night"] button {
   text-align: center;
   line-height: 1.4;
 }
+
+/* ── 移动端全屏适配 ──────────────────────────────────────────────────────
+ * 在窄屏手机上，.paper 铺满整个视口，去掉浮动卡片感。
+ * .game-shell 不再居中显示一个内边距，而是让内容填满屏幕。
+ * 只影响 ≤ 430px 的设备，桌面和平板保持原样。
+ */
+@media (max-width: 430px) {
+  .game-shell {
+    padding: 0;
+    display: block;
+  }
+
+  .paper {
+    width: 100%;
+    min-height: 100dvh;
+    max-height: none;
+    border-radius: 0;
+    box-shadow: none;
+    /* 去掉双层卡片的 inset border，只保留内容 */
+    box-shadow: none;
+  }
+
+  /* 标题页：让背景图铺满、文字沉到底部 */
+  .title-screen {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding-bottom: max(32px, env(safe-area-inset-bottom));
+  }
+
+  /* 背景图从顶部铺到底，渐变从上往下由透明变实 */
+  .title-screen::before {
+    opacity: 1;
+    background:
+      linear-gradient(
+        180deg,
+        rgb(11 31 29 / 10%) 0%,
+        rgb(11 31 29 / 20%) 35%,
+        rgb(244 236 216 / 82%) 65%,
+        var(--ids-color-rice-paper) 88%
+      ),
+      url("/backgrounds/palace-courtyard-spring-v01.webp") center 28% / cover;
+  }
+
+  /* 御旨卡片居中，不再浮动 */
+  .opening-edict {
+    align-self: center;
+    margin: 0 auto 28px;
+  }
+
+  /* 副标题和按钮贴近底部 */
+  .title-screen .subtitle {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .title-screen .actions {
+    padding: 0 24px;
+    padding-bottom: 0;
+  }
+
+  /* 宫门背景透出来，让 palace layer 可见 */
+  .game-shell .palace {
+    opacity: 1;
+  }
+
+  /* 对话场景：safe area 上方不再留白 */
+  .compact.paper {
+    padding-top: max(0px, env(safe-area-inset-top));
+  }
+
+  /* story-nav 顶部贴到 safe area */
+  .story-nav {
+    padding-top: max(4px, env(safe-area-inset-top));
+    min-height: calc(44px + max(0px, env(safe-area-inset-top)));
+  }
+}
+
+/* ── 夜间模式在移动端的标题页背景 ──────────────────────────────────────── */
+@media (max-width: 430px) {
+  html[data-game-theme="night"] .title-screen::before,
+  .night .title-screen::before {
+    background:
+      linear-gradient(
+        180deg,
+        rgb(8 22 20 / 15%) 0%,
+        rgb(8 22 20 / 30%) 35%,
+        rgb(22 37 34 / 88%) 65%,
+        var(--ids-color-rice-paper) 88%
+      ),
+      url("/backgrounds/palace-courtyard-spring-v01.webp") center 28% / cover;
+  }
+}
