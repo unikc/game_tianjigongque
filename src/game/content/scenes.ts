@@ -399,57 +399,60 @@ export const scenes: Record<string, Scene> = {
     progress: { current: 3, total: 4 },
     speaker: "昭仪 · 顾明华",
     portrait: "zhaoyi",
-    text: "顾明华终于让你坐下。她承认宗室女眷是她临时请来的，却说自己从未命人刮去林答应的名字。\n\n“妹妹若信我，宴上别提那道刮痕。若不信，也请当着我的面说。”",
+    text: "顾明华终于让你坐下。茶还是热的——她一直在等你。\n\n她承认宗室女眷是她临时请来的，却说自己从未命人刮去林答应的名字。然后她推过来一件东西：是皇后手书的一张条子，上面是你昨日说过的一句话，一字不差。\n\n\"妹妹若信我，宴上别提那道刮痕。若不信——\"她把茶杯转了半圈，\"——这张条子今晚就到皇后面前去。\"",
     choices: [
       {
         id: "day2_trust_gu",
-        text: "答应守口，但请她欠你一个解释。",
+        text: "答应守口。她手里有一张你说过的话，你没有筹码拒绝。",
         outcome:
-          "顾明华答应得很快。宫里最快兑现的，往往不是承诺，而是记住谁握着承诺。",
+          "顾明华把条子收起来，笑意才真正松开了。\n你替她守住了今天，也替她守住了你说过的那句话。\n宫里最牢的绳子不是威胁，是别人替你保管的秘密。",
         effect: {
-          stats: { 人情: 1 },
+          stats: { 人情: -1 },
           relations: { 顾明华: 2 },
-          tags: ["day2_guarded_secret"],
+          tags: ["day2_guarded_secret", "day2_gu_has_leverage"],
         },
         next: "day2_banquet",
       },
       {
         id: "day2_warn_gu",
-        text: "说明证据会交给皇后，但不会在宴上发难。",
-        outcome: "你给她留了体面，没有替她藏起风险。她称你公道，笑意却淡了。",
+        text: "把条子要回来。\"你现在还不值得用这个对我。\"",
+        outcome:
+          "她没有把条子给你，但你看见她把它重新压到砚台下面了。\n你没有守秘密，也没有交出证据。你们现在互相知道了对方的底线在哪里——这比任何承诺都更危险，也更有用。",
         effect: {
-          stats: { 礼仪: 1, 谋略: 1 },
-          relations: { 沈令仪: 1, 顾明华: -1 },
-          tags: ["day2_private_report"],
+          stats: { 胆识: 1, 谋略: 1 },
+          relations: { 顾明华: -2, 沈令仪: 1 },
+          tags: ["day2_private_report", "day2_bluffed_gu"],
         },
         next: "day2_banquet",
       },
       {
         id: "day2_ask_price",
-        text: "“姐姐想让我不提，愿拿什么来换？”",
-        outcome: "茶室安静下来。顾明华没有生气，只重新估量了你的价钱。",
+        text: "\"条子换条子。你把那张给我，我把刮痕的事压下去。\"",
+        outcome:
+          "她看了你很久。\n最后把条子烧掉了，就在你面前，用茶碟接着灰。\n\"妹妹比我以为的更值得来往。\"她说。\n你不知道这是夸奖还是警告，但条子没有了，你欠她一件事也没有了。",
         effect: {
-          stats: { 胆识: 1, 银钱: 1 },
-          relations: { 顾明华: -1 },
-          tags: ["day2_named_price"],
+          stats: { 胆识: 2 },
+          relations: { 顾明华: 1 },
+          tags: ["day2_named_price", "day2_leverage_traded"],
         },
         next: "day2_banquet",
       },
       {
         id: "day2_tiger_refuse",
-        text: "【直取】“我不替任何人守一桩尚未查清的秘密。”",
-        outcome: "话说得很重，却没有假意。顾明华第一次收起了那副待客的笑。",
+        text: "【直取】站起来。\"条子尽管送去——我亲自去跟皇后解释那句话的前后文。\"",
+        outcome:
+          "顾明华第一次收起了那副待客的笑，认真地看了你一眼。\n\"你不怕。\"\n\"我怕，\"你说，\"但我比你更怕被人拿着一张纸控制一辈子。\"\n她让你走了。条子还在她那里——但她今天没有用它。",
         effect: {
-          stats: { 胆识: 2 },
-          relations: { 顾明华: -1 },
-          tags: ["day2_refused_pressure"],
+          stats: { 胆识: 2, 名望: 1 },
+          relations: { 顾明华: -3 },
+          tags: ["day2_refused_pressure", "day2_gu_keeps_leverage"],
         },
         next: "day2_banquet",
         requiresZodiac: "tiger",
       },
     ],
   },
-  day2_banquet: {
+    day2_banquet: {
     id: "day2_banquet",
     title: "席前一把空椅",
     backgroundId: "banquet-hall-empty-seat",
@@ -457,64 +460,66 @@ export const scenes: Record<string, Scene> = {
     progress: { current: 4, total: 4 },
     speaker: "皇后 · 沈令仪",
     portrait: "queen",
-    text: "开宴前，林答应与宗室女眷同时到了。殿中果然只剩一把椅子。\n\n皇后没有看名册，只问你：“这席该请谁坐？”",
+    text: "林答应和宗室女眷同时走进来。殿里确实只有一把椅子。\n\n皇后没有看名册，只问你：\"这席该请谁坐？\"\n\n两百个人都在看你。",
     choices: [
       {
         id: "day2_seat_lin",
-        text: "请林答应入席：她的帖子在先。",
+        text: "请林答应入席——帖子在先，规矩在先。",
         outcome:
-          "你让旧承诺压过新安排。林答应得了座位，宗室那边却不会忘记这场难堪。",
+          "林答应坐下了。\n\n宗室女眷站在原地，没有人去安置她。她在两百人面前站了足足一刻钟，才被旁边的宫人悄悄引走。\n\n皇后没有说话，但你看见她在名册上写了什么。\n\n顾明华在另一侧，脸上什么表情都没有，这反而让你不安。",
         effect: {
-          stats: { 名望: 1 },
-          relations: { 沈令仪: 1, 顾明华: -1 },
-          tags: ["day2_chose_precedent"],
+          stats: { 名望: 1, 人情: -1 },
+          relations: { 沈令仪: 1, 顾明华: -2, 林栖梧: 2 },
+          tags: ["day2_chose_precedent", "day2_royal_humiliated"],
         },
         next: "day2_result",
       },
       {
         id: "day2_seat_guest",
-        text: "请宗室女眷入席：宫宴先顾朝廷体面。",
+        text: "请宗室女眷入席——朝廷体面不能让步。",
         outcome:
-          "你选择了更大的秩序，也明确牺牲了更小的那个人。皇后没有赞许，只记下你的尺度。",
+          "宗室女眷坐下了。\n\n林答应站在原地。\n她是新封的答应，位分比任何人都低，她不能说话，不能哭，只能站着。\n\n皇后说：\"安排得当。\"\n\n但你记得她的眼睛。",
         effect: {
-          stats: { 礼仪: 1, 人情: -1 },
-          relations: { 沈令仪: 1, 顾明华: 1 },
-          tags: ["day2_chose_institution"],
+          stats: { 礼仪: 2 },
+          relations: { 沈令仪: 1, 顾明华: 2, 林栖梧: -3 },
+          tags: ["day2_chose_institution", "day2_lin_stood"],
         },
         next: "day2_result",
       },
       {
         id: "day2_offer_own_seat",
-        text: "让出自己的席位，请二人都坐。",
+        text: "让出自己的席位，请二人都坐。你站着。",
         outcome:
-          "场面被你救下，你自己却站到了所有目光里。谦让有时也是最醒目的选择。",
+          "两个人都坐下了。\n\n你站在自己的位置旁边，整整一顿宫宴。\n有人低声笑了。有人停下筷子看了你很久。\n\n皇后在宴后把你留下来说了一句话：\"今日之事，哀家记得。\"\n\n你不知道这是奖赏还是提醒。",
         effect: {
-          stats: { 人情: 2, 体力: -1, 名望: 1 },
-          tags: ["day2_self_sacrifice"],
+          stats: { 人情: 2, 体力: -1 },
+          emperor: { favor: 4 },
+          relations: { 沈令仪: 2, 林栖梧: 3 },
+          tags: ["day2_self_sacrifice", "day2_stood_all_banquet"],
         },
         next: "day2_result",
       },
       {
         id: "day2_monkey_merge",
-        text: "【机变】请撤去空椅，改设二人同席的赏花小案。",
+        text: "【机变】请内侍撤去那把椅子，改设赏花小案——两人共席，无分高下。",
         outcome:
-          "一把不够坐的椅子，变成了一张恰好能坐两人的新席。礼官忙着解释这是否合制，宾客已经落座。",
+          "内侍愣了一下，照办了。\n\n礼官在旁边小声说：\"这不合制。\"\n你说：\"那就现在立制。\"\n\n两个人坐下来，中间是一盘没人敢先动的点心。宾客们看了你很久，然后继续吃饭。\n\n事情被解决了。但你说过的那句话——那就现在立制——有人记在了心里。",
         effect: {
-          stats: { 才学: 1, 人情: 1 },
-          relations: { 高福安: 1 },
-          tags: ["day2_reframed_problem"],
+          stats: { 才学: 1, 谋略: 1 },
+          relations: { 沈令仪: -1 },
+          tags: ["day2_reframed_problem", "day2_defied_protocol"],
         },
         next: "day2_result",
         requiresZodiac: "monkey",
       },
       {
         id: "day2_ox_fetch",
-        text: "【实干】请内侍从偏殿搬来同制座椅，暂缓开宴。",
+        text: "【实干】叫人去偏殿搬一把同制的椅子过来，暂缓开宴。",
         outcome:
-          "众人等了半盏茶，问题也真的被解决了。宫里有人嫌你不够漂亮地化解，你更在意两把椅子一样高。",
+          "宴开迟了半盏茶。\n\n那把椅子搬来的时候，两百人都看着一把椅子被搬进殿里。\n问题被解决了，但所有人都亲眼见到这个宴会因为少了一把椅子而迟开。\n\n皇后说：\"务实。\"\n\n你不确定她是在夸你还是在归类你。",
         effect: {
-          stats: { 体力: 1, 礼仪: 1 },
-          relations: { 高福安: 1 },
+          stats: { 体力: 1, 名望: -1 },
+          relations: { 沈令仪: 1 },
           tags: ["day2_solved_materially"],
         },
         next: "day2_result",
@@ -522,60 +527,62 @@ export const scenes: Record<string, Scene> = {
       },
     ],
   },
-  day3_incense: {
+    day3_incense: {
     id: "day3_incense",
     title: "香从何来",
     chapterLabel: "第三日",
     progress: { current: 1, total: 5 },
     backgroundId: "banquet-hall-empty-seat",
-    text: "宴散后的清晨，林答应收到一盒署着你名字的合欢香。她刚点燃半枚，侍女青禾便撞开窗，将香炉掀翻。\n\n午时，青禾死在香房门外；林答应昏迷未醒。盒底压着你的宫签，笔迹像得过分。",
+    text: "宴散后的清晨，林答应收到一盒署着你名字的合欢香。她刚点燃半枚，侍女青禾便撞开窗，将香炉掀翻。\n\n午时，青禾死在香房门外。林答应昏迷，脉搏细如蚕丝。太医说：熏烟已入肺，再等一刻钟，救不回来了。\n\n香房门还没有关上。里面那块地砖上，染着毒粉的落灰还在原处——一旦救人，太医进去，证物就会被踩散。\n\n门外的宫人已经认出了盒底的宫签，有人在说你的名字。",
     choices: [
       {
         id: "day3_save_lin",
-        text: "先请太医救林答应，自己的嫌疑稍后再说。",
+        text: "让太医进去。证物没了就没了——你不能看着她死。",
         outcome:
-          "温疏雨赶在毒入肺腑前封住香炉。你失去洗清自己的先机，却替林答应争来一口气。",
+          "温疏雨冲进去，脚踩过那片落灰。\n林答应活下来了。\n香房里的证物没了，但她的脉搏还在。\n下午，没有任何人替你洗清嫌疑——因为没有证据。\n说你名字的宫人，说得更理直气壮了。",
         effect: {
-          stats: { 人情: 1, 名望: -1 },
-          tags: ["day3_lin_treated", "day3_people_first"],
+          stats: { 人情: 2, 名望: -2 },
+          relations: { 林栖梧: 3 },
+          tags: ["day3_lin_treated", "day3_evidence_lost", "day3_people_first"],
         },
         next: "day3_physician",
       },
       {
         id: "day3_seal_room",
-        text: "封住香房，逐一登记接触过礼盒的人。",
+        text: "封门。让太医等在外面，先记录地面的落灰。",
         outcome:
-          "门被封上时，林答应仍在里面咳血。证物保住了，宫人看你的眼神却冷了一层。",
+          "你封上了门。\n太医在外面等了一刻钟，门缝里传来林答应换气的声音，越来越浅。\n落灰被完整记录下来。\n林答应活了——但只差一点点。温疏雨说：如果再晚三息进去，就来不及了。\n她进去时的眼神你一直没有忘记。",
         effect: {
-          stats: { 谋略: 1, 人情: -1 },
-          tags: ["day3_scene_preserved"],
+          stats: { 谋略: 2, 人情: -1 },
+          relations: { 林栖梧: -2, 温疏雨: -1 },
+          tags: ["day3_scene_preserved", "day3_lin_treated", "day3_cold_choice"],
         },
         next: "day3_physician",
       },
       {
         id: "day3_clear_name",
-        text: "立刻呈上自己的用印与笔迹，请皇后验明宫签。",
+        text: "把宫签从盒底取出来，当众宣读笔迹——在所有人的证词形成之前。",
         outcome:
-          "宫签很快被证实是仿写。你暂时洗清自己，也给真正送香的人留出了收拾痕迹的时间。",
+          "你把宫签举起来，请宫人认字。\n有人指出落款的草书和你平时的字不同。\n你的嫌疑暂时被压住了——代价是你伸手进了那个香盒，所有人都看见了。\n证物上现在有你的指印。\n林答应还在昏迷，没有人去救她，因为所有人都在看你。",
         effect: {
-          stats: { 礼仪: 1, 名望: 1 },
-          relations: { 沈令仪: 1 },
-          tags: ["day3_name_cleared"],
+          stats: { 谋略: 1, 名望: 1 },
+          relations: { 沈令仪: 1, 林栖梧: -2 },
+          tags: ["day3_name_cleared", "day3_fingerprints_added", "day3_lin_untreated"],
         },
         next: "day3_physician",
       },
       {
         id: "day3_favor_intervention",
-        text: "【帝宠·二】持御前腰牌分开人手：救人、封门同时进行。",
+        text: "【帝宠·二】持御前腰牌同时调动两拨人：一拨救人，一拨封门。",
         outcome:
-          "腰牌让太医和禁门同时听令。林答应得到救治，香房也没有少掉一粒灰；顾明华却听懂了这份特许意味着什么。",
+          "腰牌让内侍和太医同时行动。\n有人救人，有人封门——但内侍不懂如何保全证物，封门的时候已经踩乱了一半的落灰。\n林答应活了。证物只剩一半。\n顾明华在人群后面看了你很久。她现在知道你在御前有多少分量了。",
         effect: {
           stats: { 谋略: 1, 人情: 1 },
-          relations: { 顾明华: -1 },
+          relations: { 顾明华: -2 },
           tags: [
             "day3_imperial_intervention",
             "day3_lin_treated",
-            "day3_scene_preserved",
+            "day3_scene_partial",
           ],
         },
         next: "day3_physician",
@@ -583,7 +590,7 @@ export const scenes: Record<string, Scene> = {
       },
     ],
   },
-  day3_physician: {
+    day3_physician: {
     id: "day3_physician",
     title: "毒不在香",
     chapterLabel: "第三日",

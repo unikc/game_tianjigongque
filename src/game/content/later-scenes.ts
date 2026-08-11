@@ -758,6 +758,42 @@ function laterChoice(id: string) {
 // Chapters 7–9 form the first delayed-consequence showcase: intimacy and
 // political trust diverge, alliances alter access, and saving evidence can
 // permanently cost a life.
+// ── 第7章春猎：升级箭离弦场景的文字和选项 ─────────────────────────────
+// generator 产出的三元组文字太简，这里用完整的叙事语气覆盖
+{
+  const scene = laterScenes.day7_1;
+  if (scene) {
+    scene.title = "一支箭";
+    scene.text =
+      "箭是从人群里射出来的。\n\n" +
+      "你看见它离弦的那一刻。裴照南也看见了，她已经扑出去——但箭比她快。\n\n" +
+      "皇帝在你右边三步。掌握递弓人名册的证人在你左边两步。\n\n" +
+      "你只有一个身体。";
+    scene.choices[0].text = "推开皇帝。用你自己的身体。";
+    scene.choices[0].outcome =
+      "箭擦过你的肩膀，皮肉裂开的感觉比你想象的慢一拍。\n\n" +
+      "皇帝无伤。他站在你后面，第一次没有立刻发号施令。\n\n" +
+      "递弓的人消失在混乱里了——你把身体给了皇帝，就没有身体去追那个人。\n" +
+      "名册也没了。证人被人群冲散，没有人知道去哪里找他。";
+    scene.choices[1].text = "扑向证人。皇帝有裴照南，证词只有这一份。";
+    scene.choices[1].outcome =
+      "你把证人压在身下，箭从你们头顶掠过。\n\n" +
+      "然后你听见皇帝倒下的声音。\n\n" +
+      "他没有死，但他中箭了。\n" +
+      "裴照南没有来得及挡住——因为你先走了一步，打乱了她的判断。\n\n" +
+      "证词完整地保住了。\n" +
+      "皇帝在帐里，没有意识地发着烧。\n" +
+      "朝臣们已经开始争论该由谁监国，没有人等你开口。";
+    scene.choices[2].text = "追击刺客。他手里有调令，调令比皇帝更重要。";
+    scene.choices[2].outcome =
+      "你追上去，夺下了他手里的调令。\n\n" +
+      "调令是空白格式，盖着羽林的章。\n" +
+      "你低头看它的时候，背后传来皇帝倒地的惊呼。\n\n" +
+      "你手里多了一件证据。\n" +
+      "你失去了一个皇帝。\n" +
+      "这两件事你不知道能不能换算。";
+  }
+}
 Object.assign(laterChoice("day7_1_1").effect, {
   emperor: { favor: 8, trust: -2 },
   tags: ["ch7_emperor_safe", "ch7_player_wounded"],
