@@ -36,6 +36,11 @@ import {
   buildFormerEmpressFirstMeeting,
   buildFormerEmpressFinalScene,
   formerEmpressSceneTargets,
+  buildEmperorCh3Scene,
+  buildEmperorCh5Scene,
+  buildEmperorCh8Scene,
+  buildEmperorCh10Scene,
+  emperorSceneTargets,
 } from "../../game/content/later-scenes";
 import {
   verseForChapter,
@@ -552,7 +557,27 @@ function DialoguePanel({
                       formerEmpressSceneTargets["former_empress_ch11"] ??
                         "day11_2",
                     )
-                  : scenes[state.sceneId];
+                  : state.sceneId === "emperor_ch3_message"
+                    ? buildEmperorCh3Scene(
+                        state,
+                        emperorSceneTargets["emperor_ch3_message"] ?? "day3_result",
+                      )
+                    : state.sceneId === "emperor_ch5_audience"
+                      ? buildEmperorCh5Scene(
+                          state,
+                          emperorSceneTargets["emperor_ch5_audience"] ?? "day5_result",
+                        )
+                      : state.sceneId === "emperor_ch8_alone"
+                        ? buildEmperorCh8Scene(
+                            state,
+                            emperorSceneTargets["emperor_ch8_alone"] ?? "day8_result",
+                          )
+                        : state.sceneId === "emperor_ch10_moment"
+                          ? buildEmperorCh10Scene(
+                              state,
+                              emperorSceneTargets["emperor_ch10_moment"] ?? "day10_1",
+                            )
+                          : scenes[state.sceneId];
   const availableChoices = scene.choices.filter((choice) =>
     isChoiceAvailable(state, choice),
   );

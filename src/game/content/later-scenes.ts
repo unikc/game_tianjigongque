@@ -19,9 +19,18 @@ import {
   buildFormerEmpressFinalScene,
   formerEmpressSceneTargets,
 } from "./former-empress";
+import {
+  applyEmperorStoryline,
+  buildEmperorCh3Scene,
+  buildEmperorCh5Scene,
+  buildEmperorCh8Scene,
+  buildEmperorCh10Scene,
+  emperorSceneTargets,
+} from "./emperor-storyline";
 
 export { buildBetrayalScene };
 export { buildFormerEmpressFirstMeeting, buildFormerEmpressFinalScene, formerEmpressSceneTargets };
+export { buildEmperorCh3Scene, buildEmperorCh5Scene, buildEmperorCh8Scene, buildEmperorCh10Scene, emperorSceneTargets };
 
 type SeedChoice = [text: string, outcome: string, tag: string];
 type Beat = [title: string, text: string, choices: SeedChoice[]];
@@ -697,6 +706,7 @@ applyTianjiLedger(laterScenes);
 applyMidChapterExpansion(laterScenes);
 applyE05Betrayal(laterScenes);
 applyE04FormerEmpress(laterScenes);
+applyEmperorStoryline(laterScenes);
 
 laterScenes.day10_legitimacy_veto = {
   id: "day10_legitimacy_veto",
