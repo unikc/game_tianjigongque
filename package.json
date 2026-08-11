@@ -21,7 +21,8 @@
     "build:static": "next build",
     "ios:sync": "next build && cap sync ios",
     "ios:open": "cap open ios",
-    "standalone": "bash standalone/build.sh"
+    "standalone": "bash standalone/build.sh",
+    "deploy": "node scripts/bump-sw-version.mjs && pnpm build && pnpm wrangler pages deploy dist/client --project-name tianji-palace"
   },
   "dependencies": {
     "@capacitor/app": "^8.1.1",

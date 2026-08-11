@@ -11,7 +11,7 @@
  * 每次发布新版本时把 CACHE_VERSION 加一，旧缓存会在 activate 时清掉。
  */
 
-const CACHE_VERSION = "tianji-v1786419271";
+const CACHE_VERSION = "tianji-v1786420525202";
 const PRECACHE = [
   "/",
   "/manifest.json",
