@@ -11,7 +11,7 @@
  * 每次发布新版本时把 CACHE_VERSION 加一，旧缓存会在 activate 时清掉。
  */
 
-const CACHE_VERSION = "tianji-v1";
+const CACHE_VERSION = "tianji-v1786419271";
 const PRECACHE = [
   "/",
   "/manifest.json",
@@ -81,12 +81,12 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // 静态资源（JS/CSS/图片）：缓存优先，命中即返回，未命中再取并缓存
+  // 静态资源（JS/CSS/图片）：网络优先，联网时总是拿最新版本；
+  // 断网时才回退到缓存，保证离线可玩。
+  // 这样每次部署之后，只要手机有网，下次打开就是新版。
   event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) return cached;
-      return fetch(request).then((response) => {
-        // 只缓存成功的基本响应，避免把错误页或不透明响应写进缓存
+    fetch(request)
+      .then((response) => {
         if (response.ok && response.type === "basic") {
           const copy = response.clone();
           void caches
@@ -94,7 +94,16 @@ self.addEventListener("fetch", (event) => {
             .then((cache) => cache.put(request, copy));
         }
         return response;
-      });
-    }),
+      })
+      .catch(() =>
+        caches.match(request).then(
+          (cached) =>
+            cached ??
+            new Response("离线且无缓存", {
+              status: 503,
+              headers: { "Content-Type": "text/plain; charset=utf-8" },
+            }),
+        ),
+      ),
   );
 });
