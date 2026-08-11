@@ -563,6 +563,34 @@ function DialoguePanel({
           )}
         </div>
       )}
+      {/* 压力预警条：只在危急时显示，给玩家留出反应时间 */}
+      {(() => {
+        const warnings: string[] = [];
+        if (
+          state.resourcePressure.exhaustion >= 2 &&
+          state.stats.体力 <= 2
+        )
+          warnings.push("体力告危——连续虚耗，太医已在候诊。");
+        if (
+          state.resourcePressure.arrears >= 2 &&
+          state.stats.银钱 <= 1
+        )
+          warnings.push("月例将尽——尚宫局的红圈快写到名字旁边了。");
+        const guStrain = state.relationshipStrain?.顾明华 ?? 0;
+        const hasAlly = Object.values(state.relations).some((v) => v >= 20);
+        if (guStrain >= 2 && state.relations.顾明华 <= -30 && !hasAlly)
+          warnings.push("朝中无援——顾明华的敌意正在聚拢成一封联名帖。");
+        if (warnings.length === 0) return null;
+        return (
+          <div className="pressure-warnings" role="alert" aria-live="polite">
+            {warnings.map((w) => (
+              <p key={w} className="pressure-warning-line">
+                ⚠ {w}
+              </p>
+            ))}
+          </div>
+        );
+      })()}
     </div>
   );
 }

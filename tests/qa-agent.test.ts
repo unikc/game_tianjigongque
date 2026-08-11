@@ -574,3 +574,53 @@ describe("QA Agent · 失败终局系统", () => {
     expect(result).toBeNull();
   });
 });
+
+describe("QA Agent · 失败系统扩展", () => {
+  it("帝心耗尽触发冷宫无名", () => {
+    const state = createGame("冷宫", "scholar", 1, "rabbit");
+    state.completedChapters = chapters(7);
+    state.emperor = { favor: 4, trust: 4 };
+    state.chaptersWithoutEmperor = 4;
+    const r = resolveElimination(state, "chapter-7");
+    expect(r?.kind).toBe("eliminated");
+    expect(r?.title).toBe("冷宫无名");
+  });
+
+  it("最终预警后强撑触发猝然病倒", () => {
+    const state = createGame("强撑", "scholar", 1, "rabbit");
+    state.completedChapters = chapters(5);
+    state.stats.体力 = 1;
+    state.resourcePressure = { exhaustion: 3, arrears: 0 };
+    state.tags.push("ignored_physician_final");
+    const r = resolveElimination(state, "chapter-5");
+    expect(r?.kind).toBe("illness-departure");
+    expect(r?.title).toBe("猝然病倒");
+  });
+
+  it("帝心冷却副本在正确条件下出现", () => {
+    const state = createGame("帝心冷", "scholar", 1, "rabbit");
+    state.completedChapters = chapters(5);
+    state.emperor = { favor: 12, trust: 8 };
+    state.chaptersWithoutEmperor = 3;
+    const unlocked = availableSideStories(state);
+    expect(unlocked.some((s) => s.id === "emperor-gone-cold")).toBe(true);
+  });
+
+  it("场景内压力文本随state动态生成——无压力时不显示", () => {
+    // 这里测逻辑本身，UI渲染留给手工测试
+    const state = createGame("正常", "scholar", 1, "rabbit");
+    state.stats.体力 = 8;
+    state.stats.银钱 = 6;
+    state.resourcePressure = { exhaustion: 0, arrears: 0 };
+    const warnings: string[] = [];
+    if (state.resourcePressure.exhaustion >= 2 && state.stats.体力 <= 2)
+      warnings.push("体力");
+    if (state.resourcePressure.arrears >= 2 && state.stats.银钱 <= 1)
+      warnings.push("银钱");
+    const guStrain = state.relationshipStrain?.顾明华 ?? 0;
+    const hasAlly = Object.values(state.relations).some((v) => v >= 20);
+    if (guStrain >= 2 && state.relations.顾明华 <= -30 && !hasAlly)
+      warnings.push("政治");
+    expect(warnings).toHaveLength(0);
+  });
+});

@@ -86,6 +86,141 @@ export const sideStories: SideStory[] = [
       },
     ],
   },
+  // ── 失败预警副本：三条出局路径的最后一次警告 ────────────────────────
+
+  {
+    id: "political-purge-warning",
+    eyebrow: "危局副本 · 清算前夕",
+    title: "墙外有人在数你的名字",
+    danger: true,
+    text:
+      "你连续几章没有结交任何新的盟友，而顾明华那边的动作比往常更频繁。" +
+      "宫里开始流传一句话——不知从哪里起——说你这个人「位分配不上她的动作」。" +
+      "这不是弹劾，还没到那一步。但你能感觉到，下一步的名字已经被写进了某人的册子里。",
+    available: (state) =>
+      (state.relationshipStrain.顾明华 ?? 0) >= 2 &&
+      state.relations.顾明华 <= -30 &&
+      !Object.values(state.relations).some((v) => v >= 20) &&
+      !state.tags.includes("political_purge_warning_seen"),
+    choices: [
+      {
+        id: "purge_warn_find_ally",
+        text: "主动去一个你一直没有深交的人那里，把她当作真正的盟友来对待。",
+        outcome:
+          "你选择了一个平时来往不多的人，说了一些比你习惯说的更真实的话。" +
+          "她没有立刻回应，但她看你的眼神不一样了。这需要时间，但种子已经落下。",
+        effect: {
+          stats: { 人情: 1 },
+          tags: ["political_purge_warning_seen", "ch_ally_sought"],
+        },
+      },
+      {
+        id: "purge_warn_find_emperor",
+        text: "请求觐见，让皇帝亲眼看见你现在的样子——不是在表演，是在告诉他你的处境。",
+        outcome:
+          "你没有抱怨，只是如实说了。他听完没有立刻表态，但第二天顾明华的动作慢了一拍。" +
+          "帝心是最贵的护符，也是最难维持的。",
+        effect: {
+          emperor: { trust: 5, favor: 3 },
+          tags: ["political_purge_warning_seen"],
+        },
+      },
+      {
+        id: "purge_warn_ignore",
+        text: "不理会。宫里总有人在数别人的名字，轮到你了也一样。",
+        outcome:
+          "你没有动。那句话还在墙外流传，而你选择相信时间站在你这边。" +
+          "也许是，也许不是——但现在你已经知道了那个声音的存在。",
+        effect: {
+          stats: { 名望: -1 },
+          tags: ["political_purge_warning_seen", "purge_warning_ignored"],
+        },
+      },
+    ],
+  },
+
+  {
+    id: "emperor-gone-cold",
+    eyebrow: "危局副本 · 帝心冷却",
+    title: "召见簿上三个空格",
+    danger: true,
+    text:
+      "你已经连续三章没有被单独召见了。不是因为你做错了什么——是因为别人做对了什么。" +
+      "帝王的注意力是有限的，而你最近恰好不在那个有限的范围里。" +
+      "尚宫局的人开始在你面前说话更简短了。这是宫里的语言，比任何明确的消息都更难反驳。",
+    available: (state) =>
+      state.emperor.favor <= 15 &&
+      state.emperor.trust <= 10 &&
+      state.chaptersWithoutEmperor >= 3 &&
+      state.completedChapters.length >= 5 &&
+      !state.tags.includes("emperor_cold_warning_seen"),
+    choices: [
+      {
+        id: "emperor_cold_attend",
+        text: "备一份有实质内容的奏对，请求在下一次朝会后单独留下片刻。",
+        outcome:
+          "你没有带珠宝，也没有带说好话。你带的是一件他还没有解决的事的进展。" +
+          "他听完，让你留到了掌灯时分。这不算宠爱，但它是信任。",
+        effect: {
+          emperor: { trust: 8, favor: 4 },
+          stats: { 才学: 1 },
+          tags: ["emperor_cold_warning_seen"],
+        },
+      },
+      {
+        id: "emperor_cold_accept",
+        text: "接受现在的距离，把精力放在朝臣和后宫的关系上。",
+        outcome:
+          "你退出了帝王的视野，但你在别的地方深扎了根。" +
+          "这是另一种活法——不靠帝心，靠别的东西。",
+        effect: {
+          stats: { 名望: 1, 人情: 1 },
+          tags: ["emperor_cold_warning_seen", "emperor_path_abandoned"],
+        },
+      },
+    ],
+  },
+
+  {
+    id: "stamina-last-warning",
+    eyebrow: "危局副本 · 强撑到头",
+    title: "太医说这次不一样",
+    danger: true,
+    text:
+      "太医这次来的时候没有带药箱。他把脉之后没有说话，只是让你的贴身宫人出去，然后说：" +
+      "「再有一章这样下去，我没有办法只写禁足单了。」\n\n" +
+      "他用的是「没有办法」，不是「不建议」。",
+    available: (state) =>
+      state.resourcePressure.exhaustion >= 3 &&
+      state.stats.体力 <= 2 &&
+      !state.tags.includes("stamina_last_warning_seen"),
+    choices: [
+      {
+        id: "stamina_warn_rest",
+        text: "这一章什么都不做，只休息。把所有约定都推掉。",
+        outcome:
+          "你关掉了门，让人传话说身体不适。损失了两件可能重要的事，" +
+          "但你第一次在宫里睡了一整夜。",
+        effect: {
+          stats: { 体力: 5, 名望: -1 },
+          tags: ["stamina_last_warning_seen", "obeyed_physician"],
+          relations: { 顾明华: -1 },
+        },
+      },
+      {
+        id: "stamina_warn_push",
+        text: "告诉太医你知道了，然后继续今天的安排。",
+        outcome:
+          "你把他的话压进一个等回来再想的格子里。" +
+          "今天的事确实重要，但身体不会等你决定它什么时候重要。",
+        effect: {
+          stats: { 名望: 1 },
+          tags: ["stamina_last_warning_seen", "ignored_physician_final"],
+        },
+      },
+    ],
+  },
+
   {
     id: "gu-long-grudge",
     eyebrow: "敌对副本 · 暗流",
