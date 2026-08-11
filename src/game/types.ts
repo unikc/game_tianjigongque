@@ -16,7 +16,8 @@ export type RelationKey =
   | "林栖梧"
   | "温疏雨"
   | "裴照南"
-  | "卫夷则";
+  | "卫夷则"
+  | "昭君妃";
 export type OriginId = "scholar" | "merchant" | "general";
 export type ZodiacId = "rabbit" | "tiger" | "monkey" | "ox";
 export type Effect = {

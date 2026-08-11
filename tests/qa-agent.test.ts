@@ -15,6 +15,7 @@ import {
 } from "../src/game/content/side-stories";
 import type { ChapterId, RelationKey } from "../src/game/types";
 import { resolveElimination } from "../src/game/state/engine";
+import { isChoiceAvailable } from "../src/game/state/availability";
 
 const chapters = (n: number) =>
   Array.from({ length: n }, (_, i) => `chapter-${i + 1}` as ChapterId);
@@ -622,5 +623,72 @@ describe("QA Agent · 失败系统扩展", () => {
     if (guStrain >= 2 && state.relations.顾明华 <= -30 && !hasAlly)
       warnings.push("政治");
     expect(warnings).toHaveLength(0);
+  });
+});
+
+describe("QA Agent · E04 前朝废后", () => {
+  it("未救出证人时不出现废后入口", () => {
+    const state = createGame("无缘", "scholar", 1, "rabbit");
+    state.completedChapters = chapters(8);
+    const day9_2 = scenes["day9_2"];
+    expect(day9_2).toBeDefined();
+    // 没有 ch9_witnesses_saved 或 ch9_mouse_ledger tag
+    const available = day9_2.choices.filter((c) => isChoiceAvailable(state, c));
+    expect(available.some((c) => c.id === "day9_2_former_empress")).toBe(false);
+  });
+
+  it("救出证人后废后入口解锁", () => {
+    const state = createGame("救了人", "scholar", 1, "rabbit");
+    state.completedChapters = chapters(8);
+    state.tags.push("ch9_witnesses_saved");
+    const day9_2 = scenes["day9_2"];
+    const available = day9_2.choices.filter((c) => isChoiceAvailable(state, c));
+    expect(available.some((c) => c.id === "day9_2_former_empress")).toBe(true);
+  });
+
+  it("废后场景根据种子产出确定性台词", async () => {
+    const { buildFormerEmpressFirstMeeting } = await import("../src/game/content/later-scenes");
+    const s1 = createGame("A", "scholar", 2, "rabbit");
+    const s2 = createGame("B", "merchant", 2, "ox");
+    // 同一种子，台词相同
+    expect(buildFormerEmpressFirstMeeting(s1, "day9_3").text).toBe(
+      buildFormerEmpressFirstMeeting(s2, "day9_3").text,
+    );
+  });
+
+  it("种子不同可能产出不同台词变体", async () => {
+    const { buildFormerEmpressFirstMeeting } = await import("../src/game/content/later-scenes");
+    const even = createGame("偶", "scholar", 2, "rabbit"); // seed%2===0 → queen
+    const odd = createGame("奇", "scholar", 3, "rabbit");  // seed%2===1 → fire
+    const textEven = buildFormerEmpressFirstMeeting(even, "x").text;
+    const textOdd = buildFormerEmpressFirstMeeting(odd, "x").text;
+    // 两条变体是不同的
+    expect(textEven).not.toBe(textOdd);
+  });
+
+  it("忽视废后后第11章只有一个接受选项", async () => {
+    const { buildFormerEmpressFinalScene } = await import("../src/game/content/later-scenes");
+    const state = createGame("无缘", "scholar", 1, "rabbit");
+    state.tags.push("fe_ignored_first");
+    const scene = buildFormerEmpressFinalScene(state, "day11_2");
+    expect(scene.choices).toHaveLength(1);
+    expect(scene.choices[0].id).toBe("fe_ch11_accept");
+  });
+
+  it("关系足够高时废后站在玩家这边", async () => {
+    const { buildFormerEmpressFinalScene } = await import("../src/game/content/later-scenes");
+    const state = createGame("友好", "scholar", 1, "rabbit");
+    state.tags.push("former_empress_known", "fe_claim_received");
+    state.relations.昭君妃 = 8;
+    const scene = buildFormerEmpressFinalScene(state, "day11_2");
+    expect(scene.choices.some((c) => c.id === "fe_ch11_take_help")).toBe(true);
+  });
+
+  it("废后不是萧承元前妻（canon 约束）", async () => {
+    const { buildFormerEmpressFirstMeeting } = await import("../src/game/content/later-scenes");
+    const state = createGame("验证", "scholar", 1, "rabbit");
+    const text = buildFormerEmpressFirstMeeting(state, "x").text;
+    expect(text).not.toContain("萧承元");
+    expect(text).not.toContain("前妻");
   });
 });

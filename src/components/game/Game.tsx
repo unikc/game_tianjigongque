@@ -33,6 +33,11 @@ import {
 } from "../../game/content/tianji-scenes";
 import { buildBetrayalScene } from "../../game/content/later-scenes";
 import {
+  buildFormerEmpressFirstMeeting,
+  buildFormerEmpressFinalScene,
+  formerEmpressSceneTargets,
+} from "../../game/content/later-scenes";
+import {
   verseForChapter,
   verseAlreadySeen,
   verseSeen,
@@ -536,7 +541,18 @@ function DialoguePanel({
             ? buildLedgerScene(state, ledgerReturnTarget)
             : state.sceneId === "ch11_betrayal"
               ? buildBetrayalScene(state, "day11_2")
-              : scenes[state.sceneId];
+              : state.sceneId === "former_empress_ch9"
+                ? buildFormerEmpressFirstMeeting(
+                    state,
+                    formerEmpressSceneTargets["former_empress_ch9"] ?? "day9_3",
+                  )
+                : state.sceneId === "former_empress_ch11"
+                  ? buildFormerEmpressFinalScene(
+                      state,
+                      formerEmpressSceneTargets["former_empress_ch11"] ??
+                        "day11_2",
+                    )
+                  : scenes[state.sceneId];
   const availableChoices = scene.choices.filter((choice) =>
     isChoiceAvailable(state, choice),
   );

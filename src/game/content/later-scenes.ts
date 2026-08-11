@@ -13,8 +13,15 @@ import { applyTianjiTrades, applyTianjiLedger } from "./tianji-scenes";
 import { applyTianjiPayoff } from "./tianji-payoff-patch";
 import { applyMidChapterExpansion } from "./later-scenes-ch5to8-expansion";
 import { applyE05Betrayal, buildBetrayalScene } from "../state/betrayal";
+import {
+  applyE04FormerEmpress,
+  buildFormerEmpressFirstMeeting,
+  buildFormerEmpressFinalScene,
+  formerEmpressSceneTargets,
+} from "./former-empress";
 
 export { buildBetrayalScene };
+export { buildFormerEmpressFirstMeeting, buildFormerEmpressFinalScene, formerEmpressSceneTargets };
 
 type SeedChoice = [text: string, outcome: string, tag: string];
 type Beat = [title: string, text: string, choices: SeedChoice[]];
@@ -689,6 +696,7 @@ applyTianjiPayoff(laterScenes);
 applyTianjiLedger(laterScenes);
 applyMidChapterExpansion(laterScenes);
 applyE05Betrayal(laterScenes);
+applyE04FormerEmpress(laterScenes);
 
 laterScenes.day10_legitimacy_veto = {
   id: "day10_legitimacy_veto",

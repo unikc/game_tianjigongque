@@ -24,6 +24,7 @@
 | E03 | 天机阁主「盲眼史官」 | `DONE` | Narrative + Gameplay / Claude | 谶语只产出 belief/hint 且 signpost 措辞与真相无关；价目取自玩家真实私密记忆并确定性选定；无私事者无法交易；三次交易均早于兑现章节；秘录册形成以本人经手为唯一知情渠道的延迟旧账。 |
 | E10 | 十二章章首谶诗 | `DONE` | Narrative / Claude | 12首原创谶诗；UI浮层读过后不再弹出；不揭露种子真相；手机尺寸可读。 |
 | E05 | 必要的背叛 | `DONE` | Narrative / Claude | 可用牺牲由承诺历史派生；无承诺玩家只见拒绝背叛；已兑现承诺再背叛代价更重；第12章有三条后果场景；7项测试通过。 |
+| E04 | 前朝废后「已经赢过的人」 | `DONE` | Narrative / Claude | 三次接触结构完整；台词按种子确定性生成；canon约束通过测试；第11章结果由关系值和选择历史共同决定。 |
 
 WIP count: 0 major features `IN PROGRESS`.
 
