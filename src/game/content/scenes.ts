@@ -685,132 +685,138 @@ export const scenes: Record<string, Scene> = {
     progress: { current: 4, total: 5 },
     speaker: "昭仪 · 顾明华",
     portrait: "zhaoyi",
-    text: "作坊账上出现长春宫采买人的姓氏。顾明华承认她买过同式香盒，却反问：“若我要杀人，为何留下自己宫里的名字？”\n\n殿外已有宫人等着听你指认。现在说出口的名字，天黑前就会变成结论。",
+    text: "作坊账上出现长春宫采买人的姓氏。\n\n顾明华没有解释，只反问：\"若我要杀人，为何留下自己宫里的名字？\"\n\n殿外有三十个宫人在等你说话。你说出去的名字，天黑前就会变成结论——无论是否真相。你现在掌握的，是指认还是等待的权力。不是发现真相的权力。",
     choices: [
       {
         id: "day3_accuse_gu",
-        text: "证据指向长春宫，请先拘押采买人与顾昭仪。",
+        text: "证据指向长春宫。说出她的名字。",
         outcome:
-          "顾明华被暂禁长春宫。你得到一个迅速而整齐的答案，也看见有人趁乱搬走了香房旧账。",
+          "顾明华被暂禁长春宫。\n\n你说出那个名字的时候，三十个人都在看你。有人去执行了。\n\n两个时辰后，你得到消息：趁着这场混乱，香房里最关键的一页旧账被人悄悄撕走了。\n\n你抓住了一个人，让另一个人有时间收拾干净。",
         effect: {
-          stats: { 名望: 1 },
-          relations: { 顾明华: -2 },
+          stats: { 名望: 1, 谋略: -1 },
+          relations: { 顾明华: -3 },
           tags: ["day3_gu_accused", "day3_chain_moved"],
         },
         next: "day3_vigil",
       },
       {
         id: "day3_refuse_easy_answer",
-        text: "只拘采买人，不把作坊账当作最后结论。",
+        text: "只拘采买人，不指认顾明华。名字太快变成结论。",
         outcome:
-          "你拒绝让一个熟悉的名字替所有疑点收尾。顾明华欠你一次克制，皇后却要你尽快拿出更好的答案。",
+          "顾明华还站在你对面。\n\n你看见她呼出一口气，很慢，像是等了很久。\n\n皇后把你叫到一旁说：\"你今天欠了她一次，她知道的。\"\n\n你拒绝了容易的答案，但你也没有更好的答案。现在是你的问题了。",
         effect: {
-          stats: { 谋略: 1 },
-          relations: { 顾明华: 1, 沈令仪: -1 },
-          tags: ["day3_chain_open"],
+          stats: { 谋略: 2 },
+          relations: { 顾明华: 2, 沈令仪: -1 },
+          tags: ["day3_chain_open", "day3_owed_gu"],
         },
         next: "day3_vigil",
       },
       {
         id: "day3_trade_silence",
-        text: "私下把账页交给顾明华，换她提供真正经手人。",
+        text: "把账页私下递给顾明华，换她说出真正经手的人。",
         outcome:
-          "她给出一个内务府小吏的名字，却留下了原账。你得到一条更深的线，也让她握住你隐瞒证据的把柄。",
+          "你们没有当着任何人的面交谈。\n\n她给了你一个名字——内务府的一个小吏。你给了她那页账。\n\n后来你想，那页账里究竟写着什么，你已经永远不会知道了。\n\n她现在握着你隐瞒证据的事实。你握着一个不知道能不能用的名字。",
         effect: {
           stats: { 胆识: 1 },
           relations: { 顾明华: 1 },
-          tags: ["day3_gu_bargain", "day3_clerk_named"],
+          tags: ["day3_gu_bargain", "day3_clerk_named", "day3_gu_knows_cover"],
         },
         next: "day3_vigil",
       },
     ],
   },
-  day3_vigil: {
+    day3_vigil: {
     id: "day3_vigil",
     title: "留谁到天明",
     chapterLabel: "第三日",
     progress: { current: 5, total: 5 },
-    text: "林答应在夜里醒过一次，说青禾临死前反复念着“不是香”。随后她又陷入高热。与此同时，温疏雨被催去太医院回话，香房旧账也只剩今夜可查。\n\n你只能把有限的人手留在一处。",
+    text: "林答应在夜里醒过一次，说了一句话，然后又烧起来了。\n\n宫人复述给你听：青禾临死前反复念着\"不是香\"。\n\n温疏雨被太医院连夜催回去问话——那份脉案今晚就要决定盖不盖官印。香房旧账也只有今夜可查：明天会有人来要求\"归还原件\"。\n\n林答应的榻前没有人守。",
     choices: [
       {
         id: "day3_guard_lin",
-        text: "守住林答应，确保她活到能够作证。",
+        text: "守住林答应。她是唯一听见青禾说话的人。",
         outcome:
-          "你守到晨钟响起。林答应退了热，却有人趁夜撕走香房旧账中最关键的一页。",
+          "你守到晨钟响起。\n\n林答应退了热。她认出了你，握住了你的手。\n\n香房旧账在你不在的时候被人翻过了——最关键的那一页，干干净净地消失了。\n\n但林答应活着。她记得青禾说的那三个字。\n那三个字将来能不能用，你不知道。",
         effect: {
           stats: { 人情: 2 },
-          tags: ["day3_lin_alive", "day3_ledger_page_lost"],
+          relations: { 林栖梧: 4 },
+          tags: ["day3_lin_alive", "day3_ledger_page_lost", "day3_lin_witness"],
         },
         next: "day3_result",
       },
       {
         id: "day3_guard_wen",
-        text: "陪温疏雨去太医院，保住验毒结论。",
+        text: "陪温疏雨去太医院。脉案盖上官印，才是真的证据。",
         outcome:
-          "脉案最终盖上太医院官印。林答应活了下来，但再醒时已经记不清青禾最后一句话。",
+          "脉案盖上了印。\n\n你回来的时候，林答应刚退烧。她在你走后睡着了，睡着之前又烧了一遍。\n\n她醒过来不记得青禾说的话了。\n高热会带走一些东西。\n\n你有一份有公信力的脉案。\n你再也拿不回那三个字了。",
         effect: {
           stats: { 礼仪: 1, 谋略: 1 },
-          tags: ["day3_lin_alive", "day3_wen_safe", "day3_medical_record"],
+          relations: { 温疏雨: 2 },
+          tags: ["day3_lin_alive", "day3_wen_safe", "day3_medical_record", "day3_testimony_lost"],
         },
         next: "day3_result",
       },
       {
         id: "day3_search_ledger",
-        text: "连夜查旧账，追出礼盒进入宫门的路径。",
+        text: "查旧账。\"不是香\"意味着毒从别处来——账目能找到那个别处。",
         outcome:
-          "你找到了同一批空白宫签的领用记录。天亮时，林答应的榻前蒙上了白布。",
+          "你翻了整整一夜。\n\n在天亮前找到了：同一批空白宫签的领用记录，上面有三个名字，全都是内务府的人。\n\n天亮的时候，宫人进来，在林答应的榻前蒙上了白布。\n\n你得到了一条比青禾的遗言更能追责的线索。\n你失去了你想要救的人。",
         effect: {
-          stats: { 谋略: 2, 人情: -1 },
-          tags: ["day3_lin_dead", "day3_blank_pass"],
+          stats: { 谋略: 2, 人情: -2 },
+          relations: { 林栖梧: -3 },
+          tags: ["day3_lin_dead", "day3_blank_pass", "day3_ledger_trail"],
         },
         next: "day3_result",
       },
     ],
   },
-  day4_blank_seal: {
+    day4_blank_seal: {
     id: "day4_blank_seal",
     title: "有印无字",
     chapterLabel: "第四日",
     progress: { current: 1, total: 5 },
     speaker: "内侍 · 高福安",
     portrait: "eunuch",
-    text: "暴雨封住宫门。高福安从湿透的衣襟里取出一张旧纸：纸上盖着内廷朱印，印上却没有半个字。\n\n“今夜已经有三道调令用了同一枚印。天亮前，总会有人来取这张空白的。”",
+    text: "暴雨封住宫门。高福安从湿透的衣襟里取出一张旧纸：纸上盖着内廷朱印，印上却没有半个字。\n\n他的声音比平时更低：\"今夜已经有三道调令用了同一枚印。拿这张的人比你我都大，他们在等有人替他们填上字。\"\n\n他把纸推向你。\n\n他冒着被牵连的风险把这张纸带给你，而不是别的任何人。",
     choices: [
       {
         id: "day4_keep_seal",
-        text: "收下空印，先不告诉任何人。",
+        text: "收下。纸进了袖子，你就成了这件事的一部分。",
         outcome:
-          "纸很轻，落进袖中却像多了一块铁。高福安把自己的命与秘密一并交给了你。",
+          "纸很轻，落进袖中却像多了一块铁。\n\n高福安把自己的命与这个秘密一并交给了你。\n\n从今晚起，你拿着一张可以让你入狱的纸，也拿着一张可以反制拿它的人的纸。\n\n这两件事是同一张纸。",
         effect: {
           stats: { 谋略: 1 },
-          relations: { 高福安: 1 },
+          relations: { 高福安: 2 },
           tags: ["empty_seal_player"],
         },
         next: "day4_three_orders",
       },
       {
         id: "day4_send_queen",
-        text: "立刻交给皇后，请她封存内廷印库。",
+        text: "立刻交给皇后。这件事应该比你更大的人来处理。",
         outcome:
-          "沈令仪收下旧纸，也收走了你亲自试探它的机会。宫门很快加了双岗。",
+          "沈令仪收下旧纸，掂了掂，收进了自己的袖子。\n\n宫门很快加了双岗。\n\n高福安没有说什么，但今夜之后，他找你说话之前会多想一想。\n\n你把危险转移出去了。你也把主动权转移出去了。",
         effect: {
           stats: { 礼仪: 1 },
-          relations: { 沈令仪: 1, 高福安: -1 },
+          relations: { 沈令仪: 1, 高福安: -2 },
           tags: ["empty_seal_queen"],
         },
         next: "day4_three_orders",
       },
       {
         id: "day4_copy_marks",
-        text: "记下纸张水纹与印边缺口，再让高福安带走。",
+        text: "记下纸张水纹与印边缺口，让高福安把原件带走。",
         outcome:
-          "你没有持有危险的东西，却留下足以辨认同批纸张的特征。高福安对你的谨慎不置可否。",
-        effect: { stats: { 才学: 1, 谋略: 1 }, tags: ["empty_seal_traced"] },
+          "你花了一炷香的时间，把能用眼睛记住的东西都记住了。\n\n然后你让高福安拿回去，像什么都没有发生一样。\n\n你没有拿着那张纸。你也没有那张纸能给你的任何东西。\n但你现在能认出它的兄弟。",
+        effect: {
+          stats: { 才学: 1, 谋略: 1 },
+          tags: ["empty_seal_traced"],
+        },
         next: "day4_three_orders",
       },
     ],
   },
-  day4_three_orders: {
+    day4_three_orders: {
     id: "day4_three_orders",
     title: "三道调令",
     chapterLabel: "第四日",
@@ -885,85 +891,94 @@ export const scenes: Record<string, Scene> = {
     title: "药箱里的军粮",
     chapterLabel: "第四日",
     progress: { current: 4, total: 5 },
-    text: "羽林副统领裴照南撬开被扣下的车箱。药材下面压着军粮账簿，数目足够养一支私兵三个月。\n\n账簿末页有她兄长的签名。她按住那一页：“给我一夜，我会查清这名字是真是假。”",
+    text: "裴照南撬开车箱的时候，里面的药材还是药材。\n\n然后她看见了底部的账簿。\n\n她把账本翻到最后一页，没有说话。末页有她兄长的签名，数目足够养一支私兵三个月。\n\n她按住那一页。不是遮住——是按住，像是不让它跑掉。\n\n\"给我一夜，\"她说，\"我会查清这名字是真是假。\"\n\n她没有哭，没有辩解，只是按着那一页纸，等你开口。",
     choices: [
       {
         id: "day4_trust_pei",
-        text: "给她一夜，但留下末页拓印。",
+        text: "给她一夜。留下末页拓印，把原册交给她。",
         outcome:
-          "裴照南带走原册。你给了她查明家族的机会，也给自己留下防止账簿消失的后手。",
+          "她拿走了账簿。\n\n你手里剩着那张拓印，墨迹还没有干。\n\n你不知道她会查出什么，也不知道明天她会不会回来。\n你只知道，你选择相信一个按着自己兄长名字的人，这件事你会记一辈子——无论她查出什么。",
         effect: {
-          stats: { 谋略: 1, 人情: 1 },
+          stats: { 谋略: 1, 人情: 2 },
+          relations: { 裴照南: 4 },
           tags: ["day4_pei_trusted", "day4_ledger_copy"],
         },
         next: "day4_gu_offer",
       },
       {
         id: "day4_seize_ledger",
-        text: "拒绝私情，将账簿立即封存呈报。",
+        text: "不给。把账簿从她手下拿走，立即封存呈报。",
         outcome:
-          "账簿进入公案，裴照南的兄长也在天亮前被停职。她向你行礼，礼数无可挑剔。司籍女史谢明微接过账册，先记谁交、谁见，再在缺页处留下一道空白。",
+          "她的手还压在那一页上。\n\n你把账簿从她手下抽出来，她没有反抗。\n\n她向你行了礼，礼数无可挑剔。\n然后她走了，没有说话。\n\n账簿进入公案。她兄长在天亮前被停职。\n你得到了证物。\n你看见她离开的时候，手指还是弯的，像是还在按着什么。",
         effect: {
-          stats: { 礼仪: 1, 名望: 1 },
+          stats: { 礼仪: 1, 名望: 1, 人情: -1 },
+          relations: { 裴照南: -3 },
           tags: ["day4_ledger_official", "day4_pei_alienated"],
         },
         next: "day4_gu_offer",
       },
       {
         id: "day4_test_signature",
-        text: "先用旧军报比对笔锋，再决定是否上报。",
+        text: "先用旧军报比对笔锋。当着她的面，当场验真假。",
         outcome:
-          "签名形似，落笔顺序却反了。有人不仅偷印，也在熟练地偷走别人的名字。",
+          "她把账本翻开，你把军报铺在旁边。\n\n笔锋对着笔锋。你们谁都没有说话。\n\n落笔顺序反了。是有人在模仿她兄长的字，模仿得很熟练，只在收笔的习惯上露出了破绽。\n\n她看着那个差异，很久没有抬头。\n\"是假的。\"她说。这两个字她说得很轻，像是在确认，又像是在说服自己。",
         effect: {
           stats: { 才学: 1, 谋略: 1 },
-          tags: ["day4_signature_forged"],
+          relations: { 裴照南: 3 },
+          tags: ["day4_signature_forged", "day4_pei_knows_truth"],
         },
         next: "day4_gu_offer",
       },
     ],
   },
-  day4_gu_offer: {
+    day4_gu_offer: {
     id: "day4_gu_offer",
     title: "以假令钓真手",
     chapterLabel: "第四日",
     progress: { current: 5, total: 5 },
     speaker: "昭仪 · 顾明华",
     portrait: "zhaoyi",
-    text: "顾明华在雨停前找到你。\n\n“他们既敢用空印，我们便替它添一句话：明夜将军粮总账移往西库。谁来截这道假令，谁就是上家。”\n\n这是最快的诱饵，也会让落笔的人变成伪造调令的共犯。",
+    text: "雨停了。顾明华来找你，没有带任何人。\n\n她把空印放在你们之间，说：\"他们敢用空印，我们便替它添一句话——明夜将军粮总账移往西库。谁来截这道假令，谁就是上家。\"\n\n她停了一下，然后加了一句：\"落笔的人是共犯。但事成之后，上家的名字会替落笔的人挡住所有事。\"\n\n她看着你，等你写。",
     choices: [
       {
         id: "day4_set_bait",
-        text: "同意设局，由自己写下假调令。",
+        text: "拿起笔，在空印上写下那句话。",
         outcome:
-          "你亲手填满那张空白。钩已经抛出，从此却再不能说自己从未伪造过一道命令。",
+          "墨迹落下去的那一秒，你清楚地知道：从今以后，不管事情怎么发展，你都曾经写过一道假调令。\n\n顾明华收起那张纸。她没有道谢，只说：\"妹妹的字很好。\"\n\n钩已经抛出了。\n你不再是只在旁边看的人了。",
         effect: {
-          stats: { 胆识: 1, 谋略: 1 },
-          relations: { 顾明华: 1 },
+          stats: { 胆识: 2, 谋略: 1 },
+          relations: { 顾明华: 2 },
           tags: ["day4_bait_set", "day4_forgery_complicit"],
         },
         next: "day4_result",
       },
       {
         id: "day4_destroy_seal",
-        text: "拒绝设局，当面烧掉能够触及的空印。",
+        text: "拒绝。把那张空印当着她的面烧掉。",
         outcome:
-          "纸在铜盆里卷成黑灰。你毁掉一个武器，却不知道同样的纸是否还有第二张。",
+          "纸在铜盆里卷起来，朱印变成灰烬。\n\n顾明华看着火，没有说话。等灰冷了，她说：\"你不写，有别人会写。\"\n\n你知道她说的是真的。\n\n你毁掉了一张纸。你不知道同样的纸还有多少张。你只知道这一张上面不会有你的字。",
         effect: {
-          stats: { 礼仪: 1 },
-          relations: { 顾明华: -1 },
+          stats: { 礼仪: 1, 胆识: 1 },
+          relations: { 顾明华: -2 },
           tags: ["empty_seal_burned"],
         },
         next: "day4_result",
       },
       {
         id: "day4_countermark",
-        text: "不写假令，只放出总账将移库的口头消息。",
-        outcome: "你用流言代替伪诏。诱饵较慢，却不会留下能将你送上刑台的墨迹。",
-        effect: { stats: { 人情: 1, 谋略: 1 }, tags: ["day4_rumor_bait"] },
+        text: "不落笔。放出口头消息，不留任何书面证据。",
+        outcome:
+          "你告诉她：不写，但可以让消息传出去。\n\n顾明华想了一下，同意了。\n\n口头消息比一道假令慢，也比一道假令难追责。\n上家可能等不及，也可能更谨慎。\n\n你没有在任何地方留下自己的字。\n你也没有那道假令能引出的任何东西。",
+        effect: {
+          stats: { 谋略: 2, 名望: 1 },
+          relations: { 顾明华: 1 },
+          tags: ["day4_rumor_bait"],
+        },
         next: "day4_result",
       },
     ],
   },
+
   ...laterScenes,
 };
 // 天机阁第4章入口：追加一条可绕过的侧枝，主线分支图不变。
