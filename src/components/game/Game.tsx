@@ -1924,6 +1924,11 @@ function ChapterHub({
                 </i>
                 <p>所有行动消耗 1 闲暇；公开露面会提高注目。</p>
               </div>
+              {state.actionPoints < 1 && (
+                <p className="action-exhausted-notice">
+                  今日闲暇已用尽，明日章节后自动恢复。
+                </p>
+              )}
               <button
                 disabled={
                   state.actionPoints < 1 ||

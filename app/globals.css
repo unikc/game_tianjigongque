@@ -2566,7 +2566,20 @@ button:active {
   color: var(--ids-color-imperial-red);
 }
 .palace-actions button:disabled {
-  opacity: 0.62;
+  opacity: 0.38;
+  border-color: transparent;
+  background: rgb(0 0 0 / 12%);
+  cursor: not-allowed;
+}
+.palace-actions button:disabled .action-name {
+  color: var(--ids-color-fog);
+}
+/* 夜间模式下 disabled 按钮更显眼 */
+[data-theme="night"] .palace-actions button:disabled,
+.night .palace-actions button:disabled {
+  background: rgb(255 255 255 / 4%);
+  border-color: transparent;
+  opacity: 0.35;
 }
 .action-count {
   grid-column: 1 / -1;
@@ -5263,4 +5276,17 @@ html[data-game-theme="night"] button {
   font-size: 0.82rem;
   line-height: 1.4;
   color: var(--ids-color-imperial-red, #b44040);
+}
+
+/* ── 闲暇耗尽提示 ────────────────────────────────────────────────────── */
+.action-exhausted-notice {
+  grid-column: 1 / -1;
+  margin: 0 0 var(--ids-space-2);
+  padding: 6px 10px;
+  border-radius: 4px;
+  background: rgb(180 60 60 / 8%);
+  color: var(--ids-color-imperial-red, #b44040);
+  font-size: 0.78rem;
+  text-align: center;
+  line-height: 1.4;
 }
