@@ -988,7 +988,122 @@ const endingTitles = {
   "golden-cage": "金笼",
   scapegoat: "代罪之人",
   "closed-gate": "宫门未开",
+  // ── 失败终局 ──────────────────────────────────────────────────────────
+  eliminated: "名册除名",
+  "illness-departure": "病辞出宫",
+  "debt-expelled": "亏欠遣返",
 } as const;
+
+export type EliminationKind =
+  | "illness-departure"  // 体力耗尽
+  | "debt-expelled"      // 银钱告罄被遣返
+  | "eliminated";        // 政治清洗
+
+export type EliminationResult = {
+  kind: EliminationKind;
+  title: string;
+  prose: string;
+};
+
+/**
+ * 章节结束时检查是否触发失败终局。
+ *
+ * 设计原则：
+ *   1. 每条失败路径必须有两章以上的预告（resourcePressure 累积计数器
+ *      和顾明华的 strain 都已经存在，只需接入终局判定）。
+ *   2. 失败不是「数值归零立刻死」——是「累积到无法收拾才终结」。
+ *   3. 每个失败终局有一段散文，说明发生了什么、为什么、留下了什么。
+ *   4. 皇后阶段（第12章）不触发基础失败，她已经另有结局路径。
+ */
+export function resolveElimination(
+  state: GameState,
+  completingChapter: ChapterId,
+): EliminationResult | null {
+  const chapterNum = parseInt(completingChapter.replace("chapter-", ""), 10);
+  // 第12章已有专属结局，不走失败路径
+  if (chapterNum >= 12) return null;
+  // 第1–3章是保护期，压力刚开始积累，不触发
+  if (chapterNum <= 3) return null;
+
+  // ── 失败一：病辞出宫（体力耗尽）────────────────────────────────────
+  // 条件：exhaustion 达到最大值 3，且当前体力仍 <= 1
+  // 意味着连续至少两章体力极低，副本也没能缓解
+  if (
+    state.resourcePressure.exhaustion >= 3 &&
+    state.stats.体力 <= 1
+  ) {
+    return {
+      kind: "illness-departure",
+      title: "病辞出宫",
+      prose: [
+        `第${chapterNum}日结束的时候，太医第三次来了。`,
+        "",
+        "这一次，他没有留下禁足单，也没有开方子。他只是让人备了辇，说：",
+        "宫里没有养病的地方，你的家人已经在宫门外等着了。",
+        "",
+        "你没有反抗。你已经知道自己的身体走到哪里了。",
+        "",
+        "名册上，你的位分在你离开前一天就被撤去了。",
+        "那个位置空了三天，然后被另一个人填上了。",
+        "名册上不会记录你用过的那段时间。",
+      ].join("\n"),
+    };
+  }
+
+  // ── 失败二：亏欠遣返（银钱告罄）────────────────────────────────────
+  // 条件：arrears 达到最大值 3，且当前银钱 <= 0
+  if (
+    state.resourcePressure.arrears >= 3 &&
+    state.stats.银钱 <= 0
+  ) {
+    return {
+      kind: "debt-expelled",
+      title: "亏欠遣返",
+      prose: [
+        `第${chapterNum}日的月例，你已经没有能力再垫了。`,
+        "",
+        "尚宫局送来的不是催款单，是一份措辞平静的文书：",
+        "「月例连欠三期，无担保人，依宫规遣返原籍。」",
+        "",
+        "宫里的人不谈钱，只谈「宫规」。",
+        "宫规说你不能再住在这里，你就没有地方住了。",
+        "",
+        "你走出宫门的那一刻，觉得宫里的一切都和你无关了。",
+        "事实上，你离开之后三天，它确实和你完全无关了。",
+      ].join("\n"),
+    };
+  }
+
+  // ── 失败三：名册除名（政治清洗）────────────────────────────────────
+  // 条件：顾明华关系 <= -40，strain >= 3，且所有关系里没有一个正值盟友
+  // 「没有盟友」的定义：没有任何一个 RelationKey 的关系值 >= 20
+  const hasAnyAlly = Object.values(state.relations).some((v) => v >= 20);
+  if (
+    state.relations.顾明华 <= -40 &&
+    (state.relationshipStrain.顾明华 ?? 0) >= 3 &&
+    !hasAnyAlly
+  ) {
+    return {
+      kind: "eliminated",
+      title: "名册除名",
+      prose: [
+        "联名帖在你还没来得及应对的时候已经进了御前。",
+        "",
+        "上面有二十三个名字。你一个也不认识。",
+        "这正是它有效的原因——你不认识他们，你就无法提前知道这件事。",
+        "",
+        "皇帝没有当面告诉你他的决定。",
+        "你是从新的住所安排里猜出来的：",
+        "你被移出了正式宫室的名册，安排去了一个不在任何地图上的院子。",
+        "",
+        "宫里的人很快就不再和你说话了。",
+        "不是因为他们不愿意，是因为他们不确定和你说话算不算一件有风险的事。",
+      ].join("\n"),
+    };
+  }
+
+  return null;
+}
 
 export function resolveEnding(state: GameState) {
   const has = (tag: string) => state.tags.includes(tag);

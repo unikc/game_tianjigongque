@@ -74,6 +74,7 @@ import {
   growthCost,
   isRelationshipAvailable,
   resolveEnding,
+  resolveElimination,
   resumeDestination,
   rankOrder,
   residenceFor,
@@ -1004,6 +1005,46 @@ const laterResultCopy: Record<
   11: { eyebrow: "宫门天明", title: "宫门血诏", reward: "宫门军令" },
   12: { eyebrow: "多年以后", title: "天明以后", reward: "天明以后" },
 };
+
+function EliminationScreen({
+  title,
+  prose,
+  onRestart,
+}: {
+  title: string;
+  prose: string;
+  onRestart: () => void;
+}) {
+  return (
+    <div className="result-screen result-screen--elimination">
+      <div className="topline">
+        <span className="eyebrow">离宫</span>
+      </div>
+      <div className="result-hero" style={{ backgroundImage: "none" }}>
+        <div className="plaque">《{title}》</div>
+        <h2>这局结束了</h2>
+      </div>
+      <div className="summary">
+        {prose.split("\n").map((line, i) =>
+          line === "" ? (
+            <br key={i} />
+          ) : (
+            <p key={i}>{line}</p>
+          ),
+        )}
+        <p className="quote" style={{ marginTop: "1.5rem" }}>
+          <b>这不是唯一的结局。</b>
+          下一局，换一条路。
+        </p>
+      </div>
+      <div className="actions">
+        <button className="primary" onClick={onRestart}>
+          重新入宫
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function LaterChapterResult({
   state,
@@ -2801,21 +2842,34 @@ export default function Game() {
         {screen === "play" &&
           state &&
           laterResultChapter &&
-          Number(laterResultChapter) >= 5 && (
-            <LaterChapterResult
-              state={state}
-              chapter={Number(laterResultChapter)}
-              onContinue={() => {
-                const completed = completeChapter(
-                  state,
-                  `chapter-${laterResultChapter}` as ChapterId,
-                );
-                setState(completed);
-                setScreen("hub");
-              }}
-              onOpenJournal={() => setScreen("hub")}
-            />
-          )}{" "}
+          Number(laterResultChapter) >= 5 && (() => {
+            const chapterId = `chapter-${laterResultChapter}` as ChapterId;
+            const elimination = resolveElimination(state, chapterId);
+            if (elimination) {
+              return (
+                <EliminationScreen
+                  title={elimination.title}
+                  prose={elimination.prose}
+                  onRestart={() => {
+                    setState(null);
+                    setScreen("title");
+                  }}
+                />
+              );
+            }
+            return (
+              <LaterChapterResult
+                state={state}
+                chapter={Number(laterResultChapter)}
+                onContinue={() => {
+                  const completed = completeChapter(state, chapterId);
+                  setState(completed);
+                  setScreen("hub");
+                }}
+                onOpenJournal={() => setScreen("hub")}
+              />
+            );
+          })()}{" "}
         {screen === "play" && state && scene && (
           <DialoguePanel
             state={state}

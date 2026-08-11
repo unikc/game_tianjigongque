@@ -13,7 +13,8 @@ import {
   sideStories,
   availableSideStories,
 } from "../src/game/content/side-stories";
-import type { ChapterId } from "../src/game/types";
+import type { ChapterId, RelationKey } from "../src/game/types";
+import { resolveElimination } from "../src/game/state/engine";
 
 const chapters = (n: number) =>
   Array.from({ length: n }, (_, i) => `chapter-${i + 1}` as ChapterId);
@@ -485,5 +486,91 @@ describe("QA Agent · E05 必要的背叛", () => {
       scenes["day12_pei_aftermath"],
       scenes["day12_shen_aftermath"],
     ].forEach((s) => expect(s.choices.length).toBeGreaterThanOrEqual(2));
+  });
+});
+
+describe("QA Agent · 失败终局系统", () => {
+  const chapters = (n: number) =>
+    Array.from({ length: n }, (_, i) => `chapter-${i + 1}` as ChapterId);
+
+  it("正常玩家不触发失败", () => {
+    const state = createGame("正常", "scholar", 1, "rabbit");
+    state.completedChapters = chapters(5);
+    state.stats.体力 = 6;
+    state.stats.银钱 = 5;
+    state.resourcePressure = { exhaustion: 0, arrears: 0 };
+    expect(resolveElimination(state, "chapter-5")).toBeNull();
+  });
+
+  it("体力耗尽两章触发病辞出宫", () => {
+    const state = createGame("病倒", "scholar", 1, "rabbit");
+    state.completedChapters = chapters(5);
+    state.stats.体力 = 1;
+    state.resourcePressure = { exhaustion: 3, arrears: 0 };
+    const result = resolveElimination(state, "chapter-5");
+    expect(result).not.toBeNull();
+    expect(result?.kind).toBe("illness-departure");
+    expect(result?.prose).toContain("太医");
+  });
+
+  it("银钱告罄两章触发亏欠遣返", () => {
+    const state = createGame("穷困", "merchant", 1, "ox");
+    state.completedChapters = chapters(5);
+    state.stats.银钱 = 0;
+    state.resourcePressure = { exhaustion: 0, arrears: 3 };
+    const result = resolveElimination(state, "chapter-5");
+    expect(result?.kind).toBe("debt-expelled");
+    expect(result?.prose).toContain("月例");
+  });
+
+  it("政治孤立触发名册除名", () => {
+    const state = createGame("孤立", "scholar", 1, "rabbit");
+    state.completedChapters = chapters(6);
+    state.relations.顾明华 = -45;
+    state.relationshipStrain.顾明华 = 3;
+    // 所有关系都是负值——没有盟友
+    (Object.keys(state.relations) as RelationKey[]).forEach((k) => {
+      state.relations[k] = -5;
+    });
+    // 顾明华 必须保持深度敌对
+    state.relations.顾明华 = -45;
+    state.relationshipStrain.顾明华 = 3;
+    const result = resolveElimination(state, "chapter-6");
+    expect(result?.kind).toBe("eliminated");
+    expect(result?.prose).toContain("联名帖");
+  });
+
+  it("第3章及以前不触发失败（保护期）", () => {
+    const state = createGame("早期", "scholar", 1, "rabbit");
+    state.stats.体力 = 0;
+    state.stats.银钱 = 0;
+    state.resourcePressure = { exhaustion: 3, arrears: 3 };
+    expect(resolveElimination(state, "chapter-3")).toBeNull();
+  });
+
+  it("第12章不触发基础失败（有专属结局）", () => {
+    const state = createGame("终章", "scholar", 1, "rabbit");
+    state.stats.体力 = 0;
+    state.resourcePressure = { exhaustion: 3, arrears: 3 };
+    expect(resolveElimination(state, "chapter-12")).toBeNull();
+  });
+
+  it("体力低但 exhaustion 未满不触发失败", () => {
+    const state = createGame("体力低", "scholar", 1, "rabbit");
+    state.completedChapters = chapters(5);
+    state.stats.体力 = 1;
+    state.resourcePressure = { exhaustion: 2, arrears: 0 }; // 还差一次
+    expect(resolveElimination(state, "chapter-5")).toBeNull();
+  });
+
+  it("有一个盟友就不触发政治清洗", () => {
+    const state = createGame("有盟友", "scholar", 1, "rabbit");
+    state.completedChapters = chapters(6);
+    state.relations.顾明华 = -45;
+    state.relationshipStrain.顾明华 = 3;
+    // 但有沈令仪作盟友
+    state.relations.沈令仪 = 25;
+    const result = resolveElimination(state, "chapter-6");
+    expect(result).toBeNull();
   });
 });
