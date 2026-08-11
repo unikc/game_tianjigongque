@@ -795,7 +795,6 @@ function Title({
         </div>
         <p className="edict-line">钦录秀女入宫，观其心术，定其荣辱。</p>
       </div>
-      <p className="subtitle">一入宫门深似海，先学会看懂圣意。</p>
       <div className="actions">
         <button className="primary" onClick={onNew}>
           入宫
@@ -818,6 +817,25 @@ function Origin({
   const [origin, setOrigin] = useState<OriginId>("scholar");
   const [zodiac, setZodiac] = useState<ZodiacId>("rabbit");
   const [step, setStep] = useState<"identity" | "origin">("identity");
+
+  const originStyles: Record<OriginId, { accent: string; makeupLabel: string; makeupDesc: string }> = {
+    scholar: {
+      accent: "#4a7c6f",
+      makeupLabel: "淡雅书卷妆",
+      makeupDesc: "素面朝天，以才取胜",
+    },
+    merchant: {
+      accent: "#a0522d",
+      makeupLabel: "红唇富贵妆",
+      makeupDesc: "朱唇明眸，气度从容",
+    },
+    general: {
+      accent: "#6b4226",
+      makeupLabel: "英气飒爽妆",
+      makeupDesc: "眉峰凌厉，自有风骨",
+    },
+  };
+
   return (
     <div className="origin-screen">
       <div className="origin-heading">
@@ -868,7 +886,7 @@ function Origin({
         </>
       ) : (
         <>
-          <div className="origin-grid">
+          <div className="origin-cards-vertical">
             {(
               Object.entries(origins) as [
                 OriginId,
@@ -880,27 +898,36 @@ function Origin({
                   ([key, value]) => `${key} ${value! > 0 ? "+" : ""}${value}`,
                 )
                 .join(" · ");
+              const style = originStyles[id];
+              const isSelected = origin === id;
               return (
                 <button
                   key={id}
-                  className={`origin-card ${origin === id ? "selected" : ""}`}
+                  className={`origin-card-v ${isSelected ? "selected" : ""}`}
                   onClick={() => setOrigin(id)}
-                  aria-pressed={origin === id}
+                  aria-pressed={isSelected}
                   aria-label={`选择${item.name}，${deltaLabel}`}
+                  style={{ "--origin-accent": style.accent } as React.CSSProperties}
                 >
-                  <Image
-                    className="origin-portrait"
-                    src={item.portrait}
-                    width={720}
-                    height={900}
-                    alt=""
-                    unoptimized
-                  />
-                  <div className="origin-card-copy">
-                    <div className="origin-card-title">
-                      <h3>{item.name}</h3>
-                      {origin === id && <b>已选</b>}
+                  <div className="origin-portrait-wrap">
+                    <Image
+                      className="origin-portrait-lg"
+                      src={item.portrait}
+                      width={720}
+                      height={900}
+                      alt=""
+                      unoptimized
+                    />
+                    <div className="origin-makeup-badge">
+                      <span>{style.makeupLabel}</span>
+                      <small>{style.makeupDesc}</small>
                     </div>
+                    {isSelected && (
+                      <div className="origin-selected-mark">已选</div>
+                    )}
+                  </div>
+                  <div className="origin-card-v-copy">
+                    <h3>{item.name}</h3>
                     <span className="deltas">{deltaLabel}</span>
                     <p className="origin-description">{item.description}</p>
                   </div>
