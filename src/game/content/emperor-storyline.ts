@@ -484,6 +484,23 @@ export function applyEmperorStoryline(laterScenes: Record<string, Scene>) {
     ],
   };
 
+  // 信任不足时的静态骨架
+  laterScenes.emperor_ch10_absent = {
+    id: "emperor_ch10_absent",
+    title: "他没有来",
+    chapterLabel: "第十日",
+    text: "权力真空的第三天，你等了他一段时间。他没有出现。",
+    choices: [
+      {
+        id: "emp_ch10_accept_absent",
+        text: "接受这个事实，靠自己处理今天的事。",
+        outcome: "你自己处理了。他后来知道，让人传话说：你处理得好。",
+        effect: { stats: { 胆识: 1, 名望: 1 }, tags: ["emp_ch10_absent", "emp_handled_alone"] },
+        next: "day10_1",
+      },
+    ],
+  };
+
   // 第3章末尾追加（宠爱>=8时出现）
   // 挂在 day3_vigil 的选项后面
   const day3_vigil = laterScenes.day3_vigil;

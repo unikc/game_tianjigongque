@@ -692,3 +692,210 @@ describe("QA Agent · E04 前朝废后", () => {
     expect(text).not.toContain("前妻");
   });
 });
+
+describe("QA Agent · UI 与逻辑回归", () => {
+  // ── 出身选择 ──────────────────────────────────────────────────────────
+  it("三个出身各有不同的 portrait 路径", async () => {
+    const { origins } = await import("../src/game/content/origins");
+    const portraits = Object.values(origins as Record<string, { portrait: string }>)
+      .map((o) => o.portrait);
+    // 所有路径都不同
+    expect(new Set(portraits).size).toBe(portraits.length);
+    // 所有路径都是 webp
+    portraits.forEach((p) => expect(p).toMatch(/\.webp$/));
+  });
+
+  it("origin-card-v 样式已被使用（新纵向卡片 CSS 类存在于 Game.tsx）", async () => {
+    const gameTsx = await import("fs").then((fs) =>
+      fs.readFileSync("src/components/game/Game.tsx", "utf8"),
+    );
+    expect(gameTsx).toContain("origin-card-v");
+    expect(gameTsx).toContain("origin-portrait-wrap");
+  });
+
+  it("副标题「一入宫门」已从 Title 组件移除", async () => {
+    const gameTsx = await import("fs").then((fs) =>
+      fs.readFileSync("src/components/game/Game.tsx", "utf8"),
+    );
+    // 副标题应该已被删除
+    const titleFnStart = gameTsx.indexOf("function Title(");
+    const titleFnEnd = gameTsx.indexOf("function Origin(");
+    const titleFn = gameTsx.slice(titleFnStart, titleFnEnd);
+    expect(titleFn).not.toContain("一入宫门深似海");
+  });
+
+  // ── 皇帝专线 ─────────────────────────────────────────────────────────
+  it("所有皇帝 runtime 场景都在 Game.tsx 路由里", async () => {
+    const gameTsx = await import("fs").then((fs) =>
+      fs.readFileSync("src/components/game/Game.tsx", "utf8"),
+    );
+    const required = [
+      "emperor_ch3_message",
+      "emperor_ch5_audience",
+      "emperor_ch8_alone",
+      "emperor_ch10_moment",
+    ];
+    required.forEach((id) => {
+      expect(gameTsx, `${id} missing from scene routing`).toContain(id);
+    });
+  });
+
+  it("emperor_ch10_absent 有静态骨架可被 QA 遍历", () => {
+    expect(scenes["emperor_ch10_absent"]).toBeDefined();
+    expect(scenes["emperor_ch10_absent"].choices.length).toBeGreaterThan(0);
+  });
+
+  it("requiresEmperor 过滤器正确工作", () => {
+    const state = createGame("低宠爱", "scholar", 1, "rabbit");
+    state.emperor = { favor: 5, trust: 5, chaptersWithoutEmperor: 0 } as never;
+    const highFavorChoice = {
+      id: "test",
+      text: "test",
+      outcome: "test",
+      effect: {},
+      next: "x",
+      requiresEmperor: { favor: 20 },
+    };
+    expect(isChoiceAvailable(state, highFavorChoice as never)).toBe(false);
+
+    state.emperor.favor = 25;
+    expect(isChoiceAvailable(state, highFavorChoice as never)).toBe(true);
+  });
+
+  // ── 失败系统回归 ──────────────────────────────────────────────────────
+  it("冷宫无名失败需要 chapter >= 7", () => {
+    const state = createGame("早期冷宫", "scholar", 1, "rabbit");
+    state.completedChapters = chapters(5);
+    state.emperor = { favor: 3, trust: 3 } as never;
+    state.chaptersWithoutEmperor = 4;
+    // chapter-5 不触发（保护期）
+    expect(resolveElimination(state, "chapter-5")).toBeNull();
+    // chapter-7 触发
+    state.completedChapters = chapters(7);
+    const r = resolveElimination(state, "chapter-7");
+    expect(r?.kind).toBe("eliminated");
+  });
+
+  // ── 承诺回收完整性 ────────────────────────────────────────────────────
+  it("promise_protect_wen_honored 在 day9_2 被写入", () => {
+    const day9_2 = scenes["day9_2"];
+    expect(day9_2).toBeDefined();
+    const wenChoice = day9_2.choices.find((c) => c.id === "day9_wen_returns");
+    expect(wenChoice).toBeDefined();
+    expect(wenChoice?.effect.tags).toContain("promise_protect_wen_honored");
+  });
+
+  it("第12章后果场景 next 不指向不存在的场景", () => {
+    const aftermath = ["day12_wen_aftermath", "day12_pei_aftermath", "day12_shen_aftermath"];
+    const engineTerminals = new Set([
+      "day12_1", "day12_result", "day12_2", "day12_3",
+    ]);
+    aftermath.forEach((id) => {
+      const scene = scenes[id];
+      expect(scene, `${id} missing`).toBeDefined();
+      scene.choices.forEach((c) => {
+        const valid = scenes[c.next] !== undefined || engineTerminals.has(c.next);
+        expect(valid, `${id} → ${c.next} is broken`).toBe(true);
+      });
+    });
+  });
+
+  // ── 章首谶诗完整性 ────────────────────────────────────────────────────
+  it("verse_seen tag 写入后 verseAlreadySeen 返回 true", async () => {
+    const { verseAlreadySeen } = await import("../src/game/content/chapter-verses");
+    const state = createGame("test", "scholar", 1, "rabbit");
+    expect(verseAlreadySeen(state.tags, 3)).toBe(false);
+    state.tags.push("verse_seen:chapter-3");
+    expect(verseAlreadySeen(state.tags, 3)).toBe(true);
+  });
+
+  // ── 场景结构回归 ──────────────────────────────────────────────────────
+  it("所有重写的第3-4章场景都有 >= 3 个选项和非空文本", () => {
+    const rewritten = [
+      "day3_accusation", "day3_vigil",
+      "day4_blank_seal", "day4_cart", "day4_gu_offer",
+      "day2_request", "day2_banquet",
+    ];
+    rewritten.forEach((id) => {
+      const scene = scenes[id];
+      expect(scene, `${id} missing`).toBeDefined();
+      expect(scene.text.length, `${id} empty text`).toBeGreaterThan(20);
+      expect(scene.choices.length, `${id} too few choices`).toBeGreaterThanOrEqual(3);
+    });
+  });
+
+  it("day4_gu_offer 选项结果各有明显不同的 tags", () => {
+    const scene = scenes["day4_gu_offer"];
+    const allTags = scene.choices.flatMap((c) => c.effect.tags ?? []);
+    // 应该有不同的 tag，不都一样
+    expect(new Set(allTags).size).toBeGreaterThan(2);
+  });
+});
+
+describe("QA Agent · E06 自证预言", () => {
+  it("没有听谶语时 prophecy_reveal 直接跳过", async () => {
+    const { buildProphecyRevealScene } = await import("../src/game/content/later-scenes");
+    const state = createGame("无谶", "scholar", 1, "rabbit");
+    const scene = buildProphecyRevealScene(state, "day10_1");
+    expect(scene.choices[0].id).toBe("prophecy_skip");
+  });
+
+  it("听了谶语但没追查时 prophecy_reveal 仍跳过", async () => {
+    const { buildProphecyRevealScene } = await import("../src/game/content/later-scenes");
+    const state = createGame("听未追", "scholar", 1, "rabbit");
+    state.tags.push("tianji_forecast:fire");
+    const scene = buildProphecyRevealScene(state, "day10_1");
+    expect(scene.choices[0].id).toBe("prophecy_skip");
+  });
+
+  it("听了谶语且追查后触发揭示场景", async () => {
+    const { buildProphecyRevealScene } = await import("../src/game/content/later-scenes");
+    const state = createGame("完整链", "scholar", 1, "rabbit");
+    state.tags.push("tianji_forecast:fire", "prophecy_causal_link:fire");
+    const scene = buildProphecyRevealScene(state, "day10_1");
+    expect(scene.id).toBe("prophecy_reveal");
+    expect(scene.choices.length).toBeGreaterThanOrEqual(3);
+    expect(scene.text).toContain("谶语成真了");
+  });
+
+  it("揭示场景的三条路都写入 prophecy_fulfilled:fire", async () => {
+    const { buildProphecyRevealScene } = await import("../src/game/content/later-scenes");
+    const state = createGame("验证", "scholar", 1, "rabbit");
+    state.tags.push("tianji_forecast:fire", "prophecy_causal_link:fire");
+    const scene = buildProphecyRevealScene(state, "day10_1");
+    scene.choices.forEach((c) => {
+      expect(c.effect.tags ?? []).toContain("prophecy_fulfilled:fire");
+    });
+  });
+
+  it("prophecy_reveal 静态骨架存在于场景图", () => {
+    expect(scenes["prophecy_reveal"]).toBeDefined();
+    expect(scenes["prophecy_reveal"].choices.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("第9章追账选项写入了 prophecy_causal_link:fire", () => {
+    const day9_2 = scenes["day9_2"];
+    expect(day9_2).toBeDefined();
+    const ledgerChoices = day9_2.choices.filter(
+      (c) =>
+        c.id.includes("ledger") ||
+        c.id.includes("mouse") ||
+        (c.effect?.tags ?? []).some((t) => t.includes("mouse_ledger") || t.includes("ledger")),
+    );
+    const anyHasLink = ledgerChoices.some((c) =>
+      (c.effect?.tags ?? []).includes("prophecy_causal_link:fire"),
+    );
+    expect(anyHasLink).toBe(true);
+  });
+
+  it("不引入超自然元素——揭示文本不含占卜宿命词", async () => {
+    const { buildProphecyRevealScene } = await import("../src/game/content/later-scenes");
+    const state = createGame("验证", "scholar", 1, "rabbit");
+    state.tags.push("tianji_forecast:fire", "prophecy_causal_link:fire");
+    const scene = buildProphecyRevealScene(state, "day10_1");
+    const forbidden = ["神谶", "天命", "宿命", "注定", "神意"];
+    forbidden.forEach((word) => {
+      expect(scene.text).not.toContain(word);
+    });
+  });
+});

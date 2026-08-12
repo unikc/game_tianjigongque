@@ -41,6 +41,7 @@ import {
   buildEmperorCh8Scene,
   buildEmperorCh10Scene,
   emperorSceneTargets,
+  buildProphecyRevealScene,
 } from "../../game/content/later-scenes";
 import {
   verseForChapter,
@@ -577,7 +578,14 @@ function DialoguePanel({
                               state,
                               emperorSceneTargets["emperor_ch10_moment"] ?? "day10_1",
                             )
-                          : scenes[state.sceneId];
+                          : state.sceneId === "emperor_ch10_absent"
+                            ? buildEmperorCh10Scene(
+                                state,
+                                emperorSceneTargets["emperor_ch10_moment"] ?? "day10_1",
+                              )
+                            : state.sceneId === "prophecy_reveal"
+                              ? buildProphecyRevealScene(state, "day10_1")
+                              : scenes[state.sceneId];
   const availableChoices = scene.choices.filter((choice) =>
     isChoiceAvailable(state, choice),
   );

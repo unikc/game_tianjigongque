@@ -125,7 +125,7 @@
       "id": "E06",
       "title": "自证预言",
       "priority": "P1",
-      "status": "PLANNED",
+      "status": "DONE",
       "complexity": "L",
       "dependencies": [
         "E03",
@@ -298,6 +298,12 @@
         "status": "DONE",
         "owner": "Narrative / Claude",
         "exitCondition": "三次接触结构完整；台词按种子确定性生成；canon约束通过测试；第11章结果由关系值和选择历史共同决定。"
+      },
+      {
+        "id": "E06",
+        "title": "自证预言",
+        "status": "DONE",
+        "exitCondition": "无谶语不触发；有谶语无追查不触发；两者具备才揭示；文本无宿命词；静态骨架在场景图里。"
       }
     ],
     "notThisSprint": [
@@ -391,6 +397,12 @@
     ]
   },
   "latestCompleted": [
+    {
+      "id": "E06",
+      "title": "自证预言",
+      "date": "2026-08-12",
+      "summary": "听了天机阁「火」的谶语后主动追查→写入 prophecy_causal_link:fire；第10章触发揭示场景揭示因果闭环；三条路：接受/对质卫夷则/存作理解。不引入超自然元素，纯因果分析。7项测试通过。"
+    },
     {
       "id": "E04",
       "title": "前朝废后「已经赢过的人」",
@@ -489,10 +501,10 @@
     }
   ],
   "nextRecommendedTask": {
-    "id": "E06",
-    "title": "自证预言",
-    "why": "E03天机阁已建立，E04废后已有可信度机制，预言系统的基础设施到位。E06让玩家发现自己的预防行为促成了预言成真，需要在E04的claim体系上追加causality tag。",
-    "firstStep": "在天机阁的signpost谶语里加一条「若你追查某个名字，那个名字会出现在你手边」，然后在第10章追查行为里写入prophecy_causal_link:* tag，第12章结局里检查这条链。",
-    "acceptance": "同一种子不听谶语不触发预言链；causality事后可重建；不引入超自然元素。"
+    "id": "E09",
+    "title": "胜利与道德转型",
+    "why": "E05背叛、E06预言、E04废后全部到位，第11-12章已有足够的道德重量。E09让玩家面对「赢了之后你是什么人」这个问题，需要在结局判定里从if-else链改为门槛制。",
+    "firstStep": "把 resolveEnding 的 if-else 链改为门槛制：每个结局都有必要条件+充分条件，没有兜底的 else。",
+    "acceptance": "每个结局都有明确的进入条件；玩家可以事后理解自己为什么得到这个结局；至少一个结局需要背叛过人才能进入。"
   }
 }
